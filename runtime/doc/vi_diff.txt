@@ -1,19 +1,21 @@
 *vi_diff.txt*   Nvim
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
+==============================================================================
 Differences between Vim and Vi				*vi-differences*
 
-                                      Type <M-]> to see the table of contents.
+                                      Type |gO| to see the table of contents.
 
 ==============================================================================
 1. Limits						*limits*
 
-Vim has only a few limits for the files that can be edited.
+Vim has only a few limits for the files that can be edited. Vi cannot handle
+<Nul> characters and characters above 128, has limited line length, many other
+limits.
 
-							*E340*
 Maximum line length	   2147483647 characters
 Maximum number of lines	   2147483647 lines
 Maximum file size	   2147483647 bytes (2 Gbyte) when a long integer is
@@ -30,32 +32,23 @@ Maximum display width	   Unix and Win32: 1024 characters, otherwise 255
 Maximum lhs of a mapping   50 characters.
 Number of different highlighting types: over 30000
 Range of a Number variable:  -2147483648 to 2147483647 (might be more on 64
-			   bit systems)
+			   bit systems)  See also: |v:numbermax|,
+			   |v:numbermin| and |v:numbersize|
 Maximum length of a line in a tags file: 512 bytes.
+							*E1541*
+Maximum value for |/\U| and |/\%U|: 2147483647 (for 32bit integer).
 
 Information for undo and text in registers is kept in memory, thus when making
 (big) changes the amount of (virtual) memory available limits the number of
 undo levels and the text that can be kept in registers.  Other things are also
 kept in memory:  Command-line history, error messages for Quickfix mode, etc.
 
-Memory usage limits
--------------------
-
-The option 'maxmem' ('mm') is used to set the maximum memory used for one
-buffer (in kilobytes).  'maxmemtot' is used to set the maximum memory used for
-all buffers (in kilobytes).  The defaults depend on the system used.
-These are not hard limits, but tell Vim when to move text into a swap file.
-If you don't like Vim to swap to a file, set 'maxmem' and 'maxmemtot' to a
-very large value.  The swap file will then only be used for recovery.  If you
-don't want a swap file at all, set 'updatecount' to 0, or use the "-n"
-argument when starting Vim.
-
 ==============================================================================
 2. The most interesting additions			*vim-additions*
 
 Support for different systems.
 	Vim can be used on:
-	- Modern Unix systems (*BSD, Linux, etc.)
+	- Modern Unix systems (BSD, Linux, etc.)
 	- Windows (XP SP 2 or greater)
 	- OS X
 
@@ -86,9 +79,10 @@ Multiple windows and buffers.				|windows.txt|
 	can still be loaded (and changed) but not displayed in a window.  This
 	is called a hidden buffer.  Many commands and options have been added
 	for this facility.
-	Vim can also use multiple tab pages, each with one or more windows.  A
-	line with tab labels can be used to quickly switch between these pages.
-	|tab-page|
+	Vim can also use multiple tabpages, each with one or more windows.  A
+	line with tab labels can be used to quickly switch between these
+	pages.
+	|tabpage|
 
 Syntax highlighting.					|:syntax|
 	Vim can highlight keywords, patterns and other things.  This is
@@ -101,8 +95,8 @@ Syntax highlighting.					|:syntax|
 	this is using a |:colorscheme| command.
 	The highlighted text can be exported as HTML. |convert-to-HTML|
 	Other items that can be highlighted are matches with the search string
-	|'hlsearch'|, matching parens |matchparen| and the cursor line and
-	column |'cursorline'| |'cursorcolumn'|.
+	'hlsearch', matching parens |matchparen| and the cursor line and
+	column 'cursorline' 'cursorcolumn'.
 
 Spell checking.						|spell|
 	When the 'spell' option is set Vim will highlight spelling mistakes.
@@ -191,6 +185,12 @@ Command-line editing and history.			|cmdline-editing|
 	forward/backward one character.  The shifted right/left cursor keys
 	can be used to move forward/backward one word.  CTRL-B/CTRL-E can be
 	used to go to the begin/end of the command-line.
+	(Vi: can only alter the last character in the line)
+	(Vi: when hitting <Esc> the command-line is executed.  This is
+	unexpected for most people; therefore it was changed in Vim.  But when
+	the <Esc> is part of a mapping, the command-line is executed.  If you
+	want the Vi behaviour also when typing <Esc>, use ":cmap ^V<Esc>
+	^V^M")
 							|cmdline-history|
 	The command-lines are remembered.  The up/down cursor keys can be used
 	to recall previous command-lines.  The 'history' option can be set to
@@ -200,13 +200,14 @@ Command-line editing and history.			|cmdline-editing|
 Command-line completion.				|cmdline-completion|
 	While entering a command-line (on the bottom line of the screen)
 	<Tab> can be typed to complete
-	   what		example		~
-	- command	:e<Tab>
-	- tag		:ta scr<Tab>
-	- option	:set sc<Tab>
-	- option value  :set hf=<Tab>
-	- file name	:e ve<Tab>
-	- etc.
+
+	what		example ~
+	command		:e<Tab>
+	tag		:ta scr<Tab>
+	option		:set sc<Tab>
+	option value	:set hf=<Tab>
+	file name	:e ve<Tab>
+	etc.		 
 
 	If there are multiple matches, CTRL-N (next) and CTRL-P (previous)
 	will walk through the matches.  <Tab> works like CTRL-N, but wraps
@@ -232,9 +233,10 @@ Insert-mode completion.					|ins-completion|
 	|i_CTRL-X_CTRL-D|	definitions or macros
 	|i_CTRL-X_CTRL-O|	Omni completion: clever completion
 				specifically for a file type
+	|i_CTRL-X_CTRL-R|	contents from registers
 	etc.
 
-Long line support.					|'wrap'| |'linebreak'|
+Long line support.					'wrap' 'linebreak'
 	If the 'wrap' option is off, long lines will not wrap and only part
 	of them will be shown.  When the cursor is moved to a part that is not
 	shown, the screen will scroll horizontally.  The minimum number of
@@ -258,7 +260,7 @@ Extended search patterns.				|pattern|
 	"x\{2,4}" matches "x" 2 to 4 times.
 	"\s" matches a white space character.
 
-Directory, remote and archive browsing.			|netrw|
+Directory, remote and archive browsing.			|dir|
 	Vim can browse the file system.  Simply edit a directory.  Move around
 	in the list with the usual commands and press <Enter> to go to the
 	directory or file under the cursor.
@@ -287,7 +289,7 @@ Finding matches in files.				|:vimgrep|
 	advanced Vim regexp pattern, works on all systems and also works to
 	search in compressed files.
 
-Improved indenting for programs.			|'cindent'|
+Improved indenting for programs.			'cindent'
 	When the 'cindent' option is on the indent of each line is
 	automatically adjusted.  C syntax is mostly recognized.  The indent
 	for various styles can be set with 'cinoptions'.  The keys to trigger
@@ -334,17 +336,13 @@ Scripts and Expressions.				|expression|
 	Debugging and profiling are supported. |debug-scripts| |profile|
 	If this is not enough, an interface is provided to |Python|.
 
-Viminfo.						|viminfo-file|
+Viminfo.
 	The command-line history, marks and registers can be stored in a file
 	that is read on startup.  This can be used to repeat a search command
 	or command-line command after exiting and restarting Vim.  It is also
 	possible to jump right back to where the last edit stopped with |'0|.
 	The 'viminfo' option can be set to select which items to store in the
 	.viminfo file.  This is off by default.
-
-Printing.						|printing|
-	The |:hardcopy| command sends text to the printer.  This can include
-	syntax highlighting.
 
 Mouse support.						|mouse-using|
 	The mouse is supported in the GUI version, in an xterm for Unix, for
@@ -360,11 +358,11 @@ Editing binary files.					|edit-binary|
 	executable file, without corrupting it.  Vim doesn't remove NUL
 	characters (they are represented as <NL> internally).
 	|-b|		command-line argument to start editing a binary file
-	|'binary'|	Option set by |-b|.  Prevents adding an <EOL> for the
+	'binary'	Option set by |-b|.  Prevents adding an <EOL> for the
 			last line in the file.
 
 Multi-language support.					|multi-lang|
-	Files in double-byte or multi-byte encodings can be edited.  There is
+	Files in double-byte or multibyte encodings can be edited.  There is
 	UTF-8 support to be able to edit various languages at the same time,
 	without switching fonts. |UTF-8|
 	Messages and menus are available in different languages.
@@ -375,4 +373,4 @@ Move cursor beyond lines.
 	and figures easily.
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1,17 +1,14 @@
-// This is an open source non-commercial project. Dear PVS-Studio, please check
-// it. PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-
+#include <stdbool.h>
 #include <stdint.h>
-
 #include <uv.h>
 
+#include "nvim/event/defs.h"
 #include "nvim/event/loop.h"
+#include "nvim/event/multiqueue.h"
 #include "nvim/event/time.h"
+#include "nvim/types_defs.h"
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "event/time.c.generated.h"
-#endif
-
+#include "event/time.c.generated.h"
 
 void time_watcher_init(Loop *loop, TimeWatcher *watcher, void *data)
   FUNC_ATTR_NONNULL_ARG(1) FUNC_ATTR_NONNULL_ARG(2)
@@ -23,11 +20,12 @@ void time_watcher_init(Loop *loop, TimeWatcher *watcher, void *data)
   watcher->blockable = false;
 }
 
-void time_watcher_start(TimeWatcher *watcher, time_cb cb, uint64_t timeout,
-    uint64_t repeat)
+void time_watcher_start(TimeWatcher *watcher, time_cb cb, uint64_t timeout, uint64_t repeat)
   FUNC_ATTR_NONNULL_ALL
 {
   watcher->cb = cb;
+  // Count `timeout` starting now. If the loop was blocked, the cached time would be stale.
+  uv_update_time(watcher->uv.loop);
   uv_timer_start(&watcher->uv, time_watcher_cb, timeout, repeat);
 }
 
@@ -58,13 +56,20 @@ static void time_watcher_cb(uv_timer_t *handle)
     // the timer blocked and there already is an unprocessed event waiting
     return;
   }
-  CREATE_EVENT(watcher->events, time_event, 1, watcher);
+  CREATE_EVENT(watcher->events, time_event, watcher);
+}
+
+static void close_event(void **argv)
+{
+  TimeWatcher *watcher = argv[0];
+  watcher->close_cb(watcher, watcher->data);
 }
 
 static void close_cb(uv_handle_t *handle)
+  FUNC_ATTR_NONNULL_ALL
 {
   TimeWatcher *watcher = handle->data;
   if (watcher->close_cb) {
-    watcher->close_cb(watcher, watcher->data);
+    CREATE_EVENT(watcher->events, close_event, watcher);
   }
 }

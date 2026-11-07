@@ -24,6 +24,7 @@
 " 29-04-2002 Fixed problems in function headers and max line width
 "	     Added support for two-line if's without curly braces
 " Fixed hang: 2011 Aug 31
+" 2022 April: b:undo_indent added by Doug Kearns
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -36,6 +37,8 @@ setlocal indentexpr=GetAwkIndent()
 " Mmm, copied from the tcl indent program. Is this okay?
 setlocal indentkeys-=:,0#
 
+let b:undo_indent = "setl inde< indk<"
+
 " Only define the function once.
 if exists("*GetAwkIndent")
     finish
@@ -47,7 +50,7 @@ endif
 
 function! GetAwkIndent()
 
-   " Find previous line and get it's indentation
+   " Find previous line and get its indentation
    let prev_lineno = s:Get_prev_line( v:lnum )
    if prev_lineno == 0
       return 0
@@ -60,7 +63,7 @@ function! GetAwkIndent()
    " 'pattern { action }' (simple check match on /{/ increases the indent then)
 
    if s:Get_brace_balance( prev_data, '{', '}' ) > 0
-      return ind + &sw
+      return ind + shiftwidth()
    endif
 
    let brace_balance = s:Get_brace_balance( prev_data, '(', ')' )
@@ -99,7 +102,7 @@ function! GetAwkIndent()
 	  return s:Safe_indent( ind, s:First_word_len(prev_data), getline(v:lnum))
        else
 	 " if/for/while without '{'
-	 return ind + &sw
+	 return ind + shiftwidth()
        endif
      endif
    endif
@@ -140,7 +143,7 @@ function! GetAwkIndent()
 
    " Decrease indent if this line contains a '}'.
    if getline(v:lnum) =~ '^\s*}'
-      let ind = ind - &sw
+      let ind = ind - shiftwidth()
    endif
 
    return ind

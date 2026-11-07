@@ -1,9 +1,12 @@
 -- Test that groups and patterns are tested correctly when calling exists() for
 -- autocommands.
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear = helpers.clear
-local command, expect = helpers.command, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup = t.describe, t.it, t.setup
+local clear = n.clear
+local command, expect = n.command, n.expect
 
 describe('augroup when calling exists()', function()
   setup(clear)

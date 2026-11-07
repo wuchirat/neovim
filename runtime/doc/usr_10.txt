@@ -1,8 +1,11 @@
 *usr_10.txt*	Nvim
 
-		     VIM USER MANUAL - by Bram Moolenaar
 
-			     Making big changes
+		     VIM USER MANUAL	by Bram Moolenaar
+
+
+==============================================================================
+Making big changes
 
 
 In chapter 4 several ways to make small changes were explained.  This chapter
@@ -132,11 +135,11 @@ This works both with recording and with yank and delete commands.  For
 example, you want to collect a sequence of lines into the a register.  Yank
 the first line with: >
 
-	"aY
+	"ayy
 
 Now move to the second line, and type: >
 
-	"AY
+	"Ayy
 
 Repeat this command for all lines.  The a register now contains all those
 lines, in the order you yanked them.
@@ -192,7 +195,7 @@ following: >
 Vim finds the first occurrence of "Professor" and displays the text it is
 about to change.  You get the following prompt: >
 
-	replace with Teacher (y/n/a/q/l/^E/^Y)?
+	replace with Teacher? (y)es/(n)o/(a)ll/(q)uit/(l)ast/scroll up(^E)/down(^Y)
 
 At this point, you must enter one of the following answers:
 
@@ -294,8 +297,8 @@ five lines before the last line in the file.
 
 USING MARKS
 
-Instead of figuring out the line numbers of certain positions, remembering them
-and typing them in a range, you can use marks.
+Instead of figuring out the line numbers of certain positions, remembering
+them and typing them in a range, you can use marks.
    Place the marks as mentioned in chapter 3.  For example, use "mt" to mark
 the top of an area and "mb" to mark the bottom.  Then you can use this range
 to specify the lines between the marks (including the lines with the marks): >
@@ -339,6 +342,8 @@ then ":".  For example, when you type "5:", you will get: >
 Now you can type the command you want to use.  It will use the range "."
 (current line) until ".+4" (four lines down).  Thus it spans five lines.
 
+See also |:range|, for an overview of all possible ways to specify a range.
+
 ==============================================================================
 *10.4*	The global command
 
@@ -370,7 +375,8 @@ into "barfoo".
 was specified in this example.  This is different from ":substitute", which
 works on one line without a range.
    The command isn't perfect, since it also matches lines where "//" appears
-halfway in a line, and the substitution will also take place before the "//".
+halfway through a line, and the substitution will also take place before the
+"//".
 
 Just like with ":substitute", any pattern can be used.  When you learn more
 complicated patterns later, you can use them here.
@@ -511,12 +517,11 @@ SHIFTING
 The command ">" shifts the selected text to the right one shift amount,
 inserting whitespace.  The starting point for this shift is the left edge of
 the visual block.
-   With the same example again, ">" gives this result:
-
-	This is a	  long line ~
-	short ~
-	Any other	  long line ~
-
+   With the same example again, ">" gives this result: >
+	This is a	  long line
+	short
+	Any other	  long line
+<
 The shift amount is specified with the 'shiftwidth' option.  To change it to
 use 4 spaces: >
 
@@ -634,9 +639,9 @@ using it.  To check the current value of 'textwidth': >
 	:set textwidth
 
 Now lines will be broken to take only up to 78 characters.  However, when you
-insert text halfway through a line or delete a few words, the line will get
-too long or too short as Vim won't automatically reformat the text.  To tell
-Vim to format the current paragraph:
+insert text halfway through a line, or when you delete a few words, the lines
+will get too long or too short.  Vim doesn't automatically reformat the text.
+To tell Vim to format the current paragraph: >
 
 	gqap
 
@@ -686,7 +691,7 @@ with any motion command, with text objects and in Visual mode.
 lowercase.  This can be shortened to "guu".  "gUgU" is shortened to "gUU" and
 "g~g~" to "g~~".  Example: >
 
-				g~~ 
+				g~~
 <	Some GIRLS have Fun    ---->   sOME girls HAVE fUN ~
 
 ==============================================================================
@@ -731,10 +736,16 @@ of the program replaces these lines.
 	line 44			      line 55
 	last line		      last line
 
-The "!!" command filters the current line through a filter.  In Unix the "date"
-command prints the current time and date.  "!!date<Enter>" replaces the current
-line with the output of "date".  This is useful to add a timestamp to a file.
+The "!!" command filters the current line through a filter.  In Unix the
+"date" command prints the current time and date.  "!!date<Enter>" replaces the
+current line with the output of "date".  This is useful to add a timestamp to
+a file.
 
+Note: There is a difference between "!cmd" (e.g. using it without any file
+range) and "{range}!cmd".  While the former will simply execute the external
+command and Vim will show the output, the latter will filter {range}lines
+through the filter and replace that range by the result of the filter command.
+See |:!| and |:range!| for details.
 
 WHEN IT DOESN'T WORK
 
@@ -812,12 +823,14 @@ REDRAWING THE SCREEN
 If the external command produced an error message, the display may have been
 messed up.  Vim is very efficient and only redraws those parts of the screen
 that it knows need redrawing.  But it can't know about what another program
-has written.  To tell Vim to redraw the screen: >
-
+has written.  To tell Vim to redraw the screen:
+>
 	CTRL-L
-
+<
 ==============================================================================
 
 Next chapter: |usr_11.txt|  Recovering from a crash
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|
+
+vim:tw=78:ts=8:noet:ft=help:norl:

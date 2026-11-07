@@ -1,4 +1,4 @@
-" Maintainer:          Anmol Sethi <anmol@aubble.com>
+" Maintainer:          Anmol Sethi <hi@nhooyr.io>
 " Previous Maintainer: SungHyun Nam <goweol@gmail.com>
 
 if exists('b:did_ftplugin') || &filetype !=# 'man'
@@ -6,46 +6,35 @@ if exists('b:did_ftplugin') || &filetype !=# 'man'
 endif
 let b:did_ftplugin = 1
 
-let s:pager = !exists('b:man_sect')
+setlocal noexpandtab tabstop=8 softtabstop=8 shiftwidth=8
+setlocal wrap breakindent linebreak
+setlocal colorcolumn=0 nolist
 
-if s:pager
-  call man#init_pager()
-endif
+" Parentheses and '-' for references like `git-ls-files(1)`; '@' for systemd
+" pages; ':' for Perl and C++ pages.  Here, I intentionally omit the locale
+" specific characters matched by `@`.
+setlocal iskeyword=@-@,:,a-z,A-Z,48-57,_,.,-,(,)
 
-setlocal buftype=nofile
-setlocal noswapfile
-setlocal bufhidden=hide
-setlocal nomodified
-setlocal readonly
-setlocal nomodifiable
-setlocal noexpandtab
-setlocal tabstop=8
-setlocal softtabstop=8
-setlocal shiftwidth=8
+" man page content is likely preformatted for the terminal width, so
+" narrowing display by any additional columns leads to Embarrassing Line Wrap
+setlocal nonumber norelativenumber foldcolumn=0 signcolumn=auto
 
-setlocal nonumber
-setlocal norelativenumber
-setlocal foldcolumn=0
-setlocal colorcolumn=0
-setlocal nolist
-setlocal nofoldenable
+setlocal tagfunc=v:lua.require'man'.goto_tag
 
 if !exists('g:no_plugin_maps') && !exists('g:no_man_maps')
-  nnoremap <silent> <buffer> <M-]>      :call man#show_toc()<CR>
-  nnoremap <silent> <buffer> <C-]>      :Man<CR>
-  nnoremap <silent> <buffer> K          :Man<CR>
-  nnoremap <silent> <buffer> <C-T>      :call man#pop_tag()<CR>
-  if s:pager
-    nnoremap <silent> <buffer> <nowait> q :lclose<CR>:q<CR>
-  else
-    nnoremap <silent> <buffer> <nowait> q :lclose<CR><C-W>c
-  endif
+  nnoremap <silent> <buffer> j             gj
+  nnoremap <silent> <buffer> k             gk
+  nnoremap <silent> <buffer> gO            :lua require'man'.show_toc()<CR>
+  nnoremap <silent> <buffer> <2-LeftMouse> :Man<CR>
+  nnoremap <silent> <buffer> <nowait> q :lclose<CR><C-W>q
 endif
 
 if get(g:, 'ft_man_folding_enable', 0)
   setlocal foldenable
   setlocal foldmethod=indent
   setlocal foldnestmax=1
+else
+  setlocal nofoldenable
 endif
 
 let b:undo_ftplugin = ''

@@ -1,13 +1,16 @@
 *usr_toc.txt*	Nvim
 
-		     VIM USER MANUAL - by Bram Moolenaar
 
-			      Table Of Contents			*user-manual*
+		     VIM USER MANUAL	by Bram Moolenaar
+
 
 ==============================================================================
-Overview ~
+Table Of Contents					*user-manual* *usr*
 
-Getting Started
+==============================================================================
+Overview
+
+Getting Started ~
 |usr_01.txt|  About the manuals
 |usr_02.txt|  The first steps in Vim
 |usr_03.txt|  Moving around
@@ -21,7 +24,7 @@ Getting Started
 |usr_11.txt|  Recovering from a crash
 |usr_12.txt|  Clever tricks
 
-Editing Effectively
+Editing Effectively ~
 |usr_20.txt|  Typing command-line commands quickly
 |usr_21.txt|  Go away and come back
 |usr_22.txt|  Finding the file to edit
@@ -36,23 +39,23 @@ Editing Effectively
 |usr_31.txt|  Exploiting the GUI
 |usr_32.txt|  The undo tree
 
-Tuning Vim
+Tuning Vim ~
 |usr_40.txt|  Make new commands
 |usr_41.txt|  Write a Vim script
 |usr_42.txt|  Add new menus
 |usr_43.txt|  Using filetypes
 |usr_44.txt|  Your own syntax highlighted
-|usr_45.txt|  Select your language
+|usr_45.txt|  Select your language (locale)
 
 
-Reference manual
+Reference manual ~
 |reference_toc|     More detailed information for all commands
 
 The user manual is online:
 	https://neovim.io/doc/user
 
 ==============================================================================
-Getting Started ~
+Getting Started
 
 Read this from start to end to learn the essential commands.
 
@@ -111,8 +114,7 @@ Read this from start to end to learn the essential commands.
 		|06.2|	No or wrong colors?
 		|06.3|	Different colors
 		|06.4|	With colors or without colors
-		|06.5|	Printing with colors
-		|06.6|	Further reading
+		|06.5|	Further reading
 
 |usr_07.txt|  Editing more than one file
 		|07.1|	Edit another file
@@ -167,7 +169,7 @@ Read this from start to end to learn the essential commands.
 		|12.8|	Find where a word is used
 
 ==============================================================================
-Editing Effectively ~
+Editing Effectively
 
 Subjects that can be read independently.
 
@@ -275,7 +277,7 @@ Subjects that can be read independently.
 		|32.4|	Time travelling
 
 ==============================================================================
-Tuning Vim ~
+Tuning Vim
 
 Make Vim work as you like it.
 
@@ -326,7 +328,7 @@ Make Vim work as you like it.
 		|44.11|	Installing a syntax file
 		|44.12|	Portable syntax file layout
 
-|usr_45.txt|  Select your language
+|usr_45.txt|  Select your language (locale)
 		|45.1|	Language for Messages
 		|45.2|	Language for Menus
 		|45.3|	Using another encoding
@@ -335,4 +337,6 @@ Make Vim work as you like it.
 
 ==============================================================================
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|
+
+vim:tw=78:ts=8:noet:ft=help:norl:

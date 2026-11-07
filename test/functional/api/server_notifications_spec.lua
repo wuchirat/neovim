@@ -1,48 +1,60 @@
-local helpers = require('test.functional.helpers')(after_each)
-local eq, clear, eval, command, nvim, next_message =
-  helpers.eq, helpers.clear, helpers.eval, helpers.command, helpers.nvim,
-  helpers.next_message
-local meths = helpers.meths
+local t = require('test.testutil')
+local n = require('test.functional.testnvim')()
+
+local describe, it, before_each, after_each = t.describe, t.it, t.before_each, t.after_each
+local eq, clear, eval, command, next_msg = t.eq, n.clear, n.eval, n.command, n.next_msg
+local api = n.api
+local exec_lua = n.exec_lua
+local retry = t.retry
+local assert_alive = n.assert_alive
+local check_close = n.check_close
+
+local testlog = 'Xtest-server-notify-log'
 
 describe('notify', function()
   local channel
 
   before_each(function()
     clear()
-    channel = nvim('get_api_info')[1]
+    channel = api.nvim_get_chan_info(0).id
+  end)
+
+  after_each(function()
+    check_close()
+    os.remove(testlog)
   end)
 
   describe('passing a valid channel id', function()
     it('sends the notification/args to the corresponding channel', function()
-      eval('rpcnotify('..channel..', "test-event", 1, 2, 3)')
-      eq({'notification', 'test-event', {1, 2, 3}}, next_message())
-      command('au FileType lua call rpcnotify('..channel..', "lua!")')
+      eval('rpcnotify(' .. channel .. ', "test-event", 1, 2, 3)')
+      eq({ 'notification', 'test-event', { 1, 2, 3 } }, next_msg())
+      command('au FileType lua call rpcnotify(' .. channel .. ', "lua!")')
       command('set filetype=lua')
-      eq({'notification', 'lua!', {}}, next_message())
+      eq({ 'notification', 'lua!', {} }, next_msg())
     end)
   end)
 
-  describe('passing 0 as the channel id', function()
-    it('sends the notification/args to all subscribed channels', function()
-      nvim('subscribe', 'event2')
+  describe('channel id 0', function()
+    it('broadcasts the notification/args to all channels', function()
       eval('rpcnotify(0, "event1", 1, 2, 3)')
       eval('rpcnotify(0, "event2", 4, 5, 6)')
       eval('rpcnotify(0, "event2", 7, 8, 9)')
-      eq({'notification', 'event2', {4, 5, 6}}, next_message())
-      eq({'notification', 'event2', {7, 8, 9}}, next_message())
-      nvim('unsubscribe', 'event2')
-      nvim('subscribe', 'event1')
+      eq({ 'notification', 'event1', { 1, 2, 3 } }, next_msg())
+      eq({ 'notification', 'event2', { 4, 5, 6 } }, next_msg())
+      eq({ 'notification', 'event2', { 7, 8, 9 } }, next_msg())
+
       eval('rpcnotify(0, "event2", 10, 11, 12)')
       eval('rpcnotify(0, "event1", 13, 14, 15)')
-      eq({'notification', 'event1', {13, 14, 15}}, next_message())
+      eq({ 'notification', 'event2', { 10, 11, 12 } }, next_msg())
+      eq({ 'notification', 'event1', { 13, 14, 15 } }, next_msg())
     end)
 
     it('does not crash for deeply nested variable', function()
-      meths.set_var('l', {})
+      api.nvim_set_var('l', {})
       local nest_level = 1000
-      meths.command(('call map(range(%u), "extend(g:, {\'l\': [g:l]})")'):format(nest_level - 1))
-      eval('rpcnotify('..channel..', "event", g:l)')
-      local msg = next_message()
+      command(('call map(range(%u), "extend(g:, {\'l\': [g:l]})")'):format(nest_level - 1))
+      eval('rpcnotify(' .. channel .. ', "event", g:l)')
+      local msg = next_msg()
       eq('notification', msg[1])
       eq('event', msg[2])
       local act_ret = msg[3]
@@ -64,5 +76,38 @@ describe('notify', function()
       end
       eq(nest_level, act_nest_level)
     end)
+  end)
+
+  it('cancels stale events on channel close #13537', function()
+    local catchan = eval("jobstart(['cat'], {'rpc': v:true})")
+    local catpath = vim.fs.normalize(eval('exepath("cat")'))
+    api.nvim_set_var('somevar', 0)
+    eq(
+      {
+        id = catchan,
+        argv = { catpath },
+        stream = 'job',
+        mode = 'rpc',
+        client = {},
+        detach = true,
+        trust = true,
+      },
+      exec_lua(function()
+        vim.rpcnotify(catchan, 'nvim_call_function', 'chanclose', { catchan, 'rpc' })
+        vim.rpcnotify(catchan, 'nvim_set_var', 'somevar', 1) -- Should be cancelled.
+        return vim.api.nvim_get_chan_info(catchan)
+      end)
+    )
+    assert_alive()
+    eq(
+      { false, 'Invalid channel: ' .. catchan },
+      exec_lua(function()
+        return { pcall(vim.rpcrequest, catchan, 'nvim_eval', '1+1') }
+      end, catchan)
+    )
+    retry(nil, 3000, function()
+      eq({}, api.nvim_get_chan_info(catchan))
+    end) -- cat be dead :(
+    eq(0, api.nvim_get_var('somevar'))
   end)
 end)

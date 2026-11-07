@@ -6,15 +6,18 @@
 -- C. make sure that the location list window is not reused instead of the window
 --    it belongs to.
 
-local helpers = require('test.functional.helpers')(after_each)
-local source = helpers.source
-local clear, command, expect = helpers.clear, helpers.command, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup, teardown = t.describe, t.it, t.setup, t.teardown
+local source = n.source
+local clear, command, expect = n.clear, n.command, n.expect
 
 describe('location list', function()
+  local test_file = 'Xtest-096_location_list.out'
   setup(clear)
-
   teardown(function()
-    os.remove('test.out')
+    os.remove(test_file)
   end)
 
   it('is working', function()
@@ -45,20 +48,18 @@ describe('location list', function()
         setl readonly
         exe 'doautocmd BufRead ' . substitute(a:name, '\v^test://(.*)', '\1', '')
       endfunction
-      ]] ..
-
-      -- Register the above buffer setup function to be executed before
-      -- starting to edit a new "test protocol" buffer.
-      [[
+      ]]
+        -- Register the above buffer setup function to be executed before
+        -- starting to edit a new "test protocol" buffer.
+        .. [[
       augroup testgroup
         au!
         autocmd BufReadCmd test://* call ReadTestProtocol(expand("<amatch>"))
       augroup END
-      ]] ..
-
-      -- Populate the location list of the current window with some test
-      -- protocol file locations such as "test://foo.txt".
-      [[
+      ]]
+        -- Populate the location list of the current window with some test
+        -- protocol file locations such as "test://foo.txt".
+        .. [[
       let words = [ "foo", "bar", "baz", "quux", "shmoo", "spam", "eggs" ]
       let qflist = []
       for word in words
@@ -68,11 +69,12 @@ describe('location list', function()
         " valid.
         call setloclist(0, qflist, ' ')
       endfor
-    ]])
+    ]]
+    )
 
-    -- Set up the result buffer "test.out".
+    -- Set up the result buffer.
     command('enew')
-    command('w! test.out')
+    command('w! ' .. test_file)
     command('b 1')
 
     -- Test A.
@@ -99,14 +101,16 @@ describe('location list', function()
     command([[let locationListFileName = substitute(getline(line('.')), '\([^|]*\)|.*', '\1', '')]])
     command('wincmd n')
     command('wincmd K')
-    command('b test.out')
+    command('b ' .. test_file)
 
     -- Prepare test output and write it to the result buffer.
     command([[let fileName = substitute(fileName, '\\', '/', 'g')]])
     command([[let locationListFileName = substitute(locationListFileName, '\\', '/', 'g')]])
     command([[call append(line('$'), "Test A:")]])
     command([[call append(line('$'), "  - file name displayed: " . fileName)]])
-    command([[call append(line('$'), "  - quickfix claims that the file name displayed is: " . locationListFileName)]])
+    command(
+      [[call append(line('$'), "  - quickfix claims that the file name displayed is: " . locationListFileName)]]
+    )
     command('w')
 
     -- Clean slate for the next test.
@@ -132,7 +136,7 @@ describe('location list', function()
     command('let numberOfWindowsOpen = winnr("$")')
     command('wincmd n')
     command('wincmd K')
-    command('b test.out')
+    command('b ' .. test_file)
 
     -- Prepare test output and write it to the result buffer.
     command('call append(line("$"), "Test B:")')
@@ -170,12 +174,14 @@ describe('location list', function()
     command('let bufferName = expand("%")')
     command('wincmd n')
     command('wincmd K')
-    command('b test.out')
+    command('b ' .. test_file)
 
     -- Prepare test output and write it to the result buffer.
     command([[let bufferName = substitute(bufferName, '\\', '/', 'g')]])
     command([[call append(line("$"), "Test C:")]])
-    command([[call append(line('$'), "  - 'buftype' of the location list window: " . locationListWindowBufType)]])
+    command(
+      [[call append(line('$'), "  - 'buftype' of the location list window: " . locationListWindowBufType)]]
+    )
     command([[call append(line('$'), "  - buffer displayed in the 2nd window: " . bufferName)]])
     command('w')
     command('wincmd o')

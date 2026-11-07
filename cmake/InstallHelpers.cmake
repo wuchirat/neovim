@@ -2,13 +2,10 @@
 if(CMAKE_SYSTEM_NAME MATCHES "BSD" AND NOT DEFINED CMAKE_INSTALL_MANDIR)
   if(DEFINED ENV{MANPREFIX})
     set(CMAKE_INSTALL_MANDIR "$ENV{MANPREFIX}/man")
-  else()
-    set(CMAKE_INSTALL_MANDIR "/usr/local/man")
+  elseif(CMAKE_INSTALL_PREFIX MATCHES "^/usr/local$")
+    set(CMAKE_INSTALL_MANDIR "man")
   endif()
 endif()
-
-# For $CMAKE_INSTALL_{DATAROOT,MAN, ...}DIR
-include(GNUInstallDirs)
 
 # This will create any directories that need to be created in the destination
 # path with the typical owner, group, and user permissions--independent of the
@@ -45,7 +42,7 @@ function(create_install_dir_with_perms)
     while(NOT EXISTS \$ENV{DESTDIR}\${_current_dir} AND NOT \${_prev_dir} STREQUAL \${_current_dir})
       list(APPEND _parent_dirs \${_current_dir})
       set(_prev_dir \${_current_dir})
-      get_filename_component(_current_dir \${_current_dir} PATH)
+      get_filename_component(_current_dir \${_current_dir} DIRECTORY)
     endwhile()
 
     if(_parent_dirs)

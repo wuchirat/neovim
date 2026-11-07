@@ -2,9 +2,12 @@
 -- Since this script is sourced we need to explicitly break changes up in
 -- undo-able pieces.  Do that by setting 'undolevels'.
 
-local helpers = require('test.functional.helpers')(after_each)
-local feed, insert = helpers.feed, helpers.insert
-local clear, feed_command, expect = helpers.clear, helpers.feed_command, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup, teardown = t.describe, t.it, t.setup, t.teardown
+local feed, insert = n.feed, n.insert
+local clear, feed_command, expect = n.clear, n.feed_command, n.expect
 
 describe('72', function()
   setup(clear)
@@ -69,7 +72,7 @@ describe('72', function()
     feed_command('set undofile ul=100')
     feed('uuuuuu:w >>test.out<cr>')
 
-    ---- Open the output to see if it meets the expections
+    ---- Open the output to see if it meets the expectations
     feed_command('e! test.out')
 
     -- Assert buffer contents.

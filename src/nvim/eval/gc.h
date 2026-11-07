@@ -1,12 +1,8 @@
-#ifndef NVIM_EVAL_GC_H
-#define NVIM_EVAL_GC_H
+#pragma once
 
-#include "nvim/eval/typval.h"
+#include "nvim/eval/typval_defs.h"
 
-extern dict_T *gc_first_dict;
-extern list_T *gc_first_list;
+#include "eval/gc.h.generated.h"
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "eval/gc.h.generated.h"
-#endif
-#endif  // NVIM_EVAL_GC_H
+DLLEXPORT extern dict_T *gc_first_dict;
+DLLEXPORT extern list_T *gc_first_list;

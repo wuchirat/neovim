@@ -1,8 +1,11 @@
 -- Tests for nested function.
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear, insert = helpers.clear, helpers.insert
-local command, expect, source = helpers.command, helpers.expect, helpers.source
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup = t.describe, t.it, t.setup
+local clear, insert = n.clear, n.insert
+local command, expect, source = n.command, n.expect, n.source
 
 describe('test_nested_function', function()
   setup(clear)

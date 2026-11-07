@@ -1,8 +1,11 @@
 *usr_40.txt*	Nvim
 
-		     VIM USER MANUAL - by Bram Moolenaar
 
-			      Make new commands
+		     VIM USER MANUAL	by Bram Moolenaar
+
+
+==============================================================================
+Make new commands
 
 
 Vim is an extensible editor.  You can take a sequence of commands you use
@@ -94,14 +97,13 @@ LISTING MAPPINGS
 
 To see the currently defined mappings, use ":map" without arguments.  Or one
 of the variants that include the mode in which they work.  The output could
-look like this:
-
-	   _g		 :call MyGrep(1)<CR> ~
-	v  <F2>		 :s/^/> /<CR>:noh<CR>`` ~
-	n  <F2>		 :.,$s/^/> /<CR>:noh<CR>`` ~
+look like this: >
+	   _g		 :call MyGrep(1)<CR>
+	v  <F2>		 :s/^/> /<CR>:noh<CR>``
+	n  <F2>		 :.,$s/^/> /<CR>:noh<CR>``
 	   <xHome>	 <Home>
 	   <xEnd>	 <End>
-
+<
 
 The first column of the list shows in which mode the mapping is effective.
 This is "n" for Normal mode, "i" for Insert mode, etc.  A blank is used for a
@@ -159,7 +161,7 @@ RECURSIVE MAPPING
 When a mapping triggers itself, it will run forever.  This can be used to
 repeat an action an unlimited number of times.
    For example, you have a list of files that contain a version number in the
-first line.  You edit these files with "vim *.txt".  You are now editing the
+first line.  You edit these files with `vim *.txt`.  You are now editing the
 first file.  Define this mapping: >
 
 	:map ,, :s/5.1/5.2/<CR>:wnext<CR>,,
@@ -226,7 +228,7 @@ When using a space inside a mapping, use <Space> (seven characters): >
 This makes the spacebar move a blank-separated word forward.
 
 It is not possible to put a comment directly after a mapping, because the "
-character is considered to be part of the mapping.  You can use |", this
+character is considered to be part of the mapping.  You can use `|"`, this
 starts a new, empty command with a comment.  Example: >
 
 	:map <Space> W|     " Use spacebar to move forward a word
@@ -383,8 +385,8 @@ Some of the other options and keywords are as follows:
 	-count={number}		The command can take a count whose default is
 				{number}.  The resulting count can be used
 				through the <count> keyword.
-	-bang			You can use a !.  If present, using <bang> will
-				result in a !.
+	-bang			You can use a !.  If present, using <bang>
+				will result in a !.
 	-register		You can specify a register.  (The default is
 				the unnamed register.)
 				The register specification is available as
@@ -453,15 +455,26 @@ matching BufWritePre autocommands and executes them, and then it
 performs the ":write".
    The general form of the :autocmd command is as follows: >
 
-	:autocmd [group] {events} {file_pattern} [nested] {command}
+	:autocmd [group] {events} {file-pattern} [++nested] {command}
 
 The [group] name is optional.  It is used in managing and calling the commands
 (more on this later).  The {events} parameter is a list of events (comma
 separated) that trigger the command.
-   {file_pattern} is a filename, usually with wildcards.  For example, using
+   {file-pattern} is a filename, usually with wildcards.  For example, using
 "*.txt" makes the autocommand be used for all files whose name end in ".txt".
-The optional [nested] flag allows for nesting of autocommands (see below), and
-finally, {command} is the command to be executed.
+The optional [++nested] flag allows for nesting of autocommands (see below),
+and finally, {command} is the command to be executed.
+
+When adding an autocommand the already existing ones remain.  To avoid adding
+the autocommand several times you should use this form: >
+
+	:augroup updateDate
+	:  autocmd!
+	:  autocmd BufWritePre *  call DateInsert()
+	:augroup END
+
+This will delete any previously defined autocommand with `:autocmd!` before
+defining the new one.  Groups are explained later.
 
 
 EVENTS
@@ -489,8 +502,8 @@ See |autocmd-events| for a complete list of events.
 
 PATTERNS
 
-The {file_pattern} argument can actually be a comma-separated list of file
-patterns.  For example: "*.c,*.h" matches files ending in ".c" and ".h".
+The {file-pattern} argument can actually be a comma-separated list of file
+patterns.  For example: `*.c,*.h` matches files ending in ".c" and ".h".
    The usual file wildcards can be used.  Here is a summary of the most often
 used ones:
 
@@ -550,9 +563,9 @@ for the cprograms group: >
 
 GROUPS
 
-The {group} item, used when defining an autocommand, groups related autocommands
-together.  This can be used to delete all the autocommands in a certain group,
-for example.
+The {group} item, used when defining an autocommand, groups related
+autocommands together.  This can be used to delete all the autocommands in a
+certain group, for example.
    When defining several autocommands for a certain group, use the ":augroup"
 command.  For example, let's define autocommands for C programs: >
 
@@ -576,9 +589,9 @@ NESTING
 Generally, commands executed as the result of an autocommand event will not
 trigger any new events.  If you read a file in response to a FileChangedShell
 event, it will not trigger the autocommands that would set the syntax, for
-example.  To make the events triggered, add the "nested" argument: >
+example.  To make the events triggered, add the "++nested" flag: >
 
-	:autocmd FileChangedShell * nested  edit
+	:autocmd FileChangedShell * ++nested  edit
 
 
 EXECUTING AUTOCOMMANDS
@@ -586,7 +599,7 @@ EXECUTING AUTOCOMMANDS
 It is possible to trigger an autocommand by pretending an event has occurred.
 This is useful to have one autocommand trigger another one.  Example: >
 
-	:autocmd BufReadPost *.new  execute "doautocmd BufReadPost " . expand("<afile>:r")
+	:autocmd BufReadPost *.new  execute "doautocmd BufReadPost " .. expand("<afile>:r")
 
 This defines an autocommand that is triggered when a new file has been edited.
 The file name must end in ".new".  The ":execute" command uses expression
@@ -611,7 +624,7 @@ Example: >
 
 	:autocmd BufReadPost *.log normal G
 
-This will make the cursor jump to the last line of *.log files when you start
+This will make the cursor jump to the last line of `*.log` files when you start
 to edit it.
    Using the ":normal" command is a bit tricky.  First of all, make sure its
 argument is a complete command, including all the arguments.  When you use "i"
@@ -646,12 +659,14 @@ To ignore all events, use the following command: >
 
 	:set eventignore=all
 
-To set it back to the normal behavior, make 'eventignore' empty: >
-
+To set it back to the normal behavior, make 'eventignore' empty:
+>
 	:set eventignore=
-
+<
 ==============================================================================
 
 Next chapter: |usr_41.txt|  Write a Vim script
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|
+
+vim:tw=78:ts=8:noet:ft=help:norl:

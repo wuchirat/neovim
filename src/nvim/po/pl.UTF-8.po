@@ -1,5 +1,4 @@
-# translation of pl.po to Polish
-# Polish Translation for Vim
+# Polish translation for Vim
 #
 # updated 2013 for vim-7.4
 #
@@ -14,7 +13,7 @@ msgstr ""
 "Last-Translator: Mikolaj Machowski <mikmach@wp.pl>\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Lokalize 1.0\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
@@ -381,8 +380,8 @@ msgid " Omni completion (^O^N^P)"
 msgstr " Omni uzupełnianie (^O^N^P)"
 
 #: ../edit.c:96
-msgid " Spelling suggestion (s^N^P)"
-msgstr "Propozycja pisowni (^L^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr "Propozycja pisowni (^S^N^P)"
 
 #: ../edit.c:97
 msgid " Keyword Local completion (^N^P)"
@@ -1202,18 +1201,14 @@ msgstr "E143: Autokomendy nieoczekiwanie skasowały nowy bufor %s"
 msgid "E144: non-numeric argument to :z"
 msgstr "E144: nienumeryczny argument dla :z"
 
-#: ../ex_cmds.c:3404
-msgid "E145: Shell commands not allowed in rvim"
-msgstr "E145: Komendy powłoki są niedozwolone w rvim"
-
 #: ../ex_cmds.c:3498
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: Wzorce regularne nie mogą być rozgraniczane literami"
 
 #: ../ex_cmds.c:3964
 #, c-format
-msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
-msgstr "zamień na %s (y/n/a/q/l/^E/^Y)?"
+msgid "replace with %s? (y)es/(n)o/(a)ll/(q)uit/(l)ast/scroll up(^E)/down(^Y)"
+msgstr "zamień na %s? (y)es/(n)o/(a)ll/(q)uit/(l)ast/scroll up(^E)/down(^Y)"
 
 #: ../ex_cmds.c:4379
 msgid "(Interrupted) "
@@ -1281,18 +1276,18 @@ msgstr "E478: Nie panikuj!"
 
 #: ../ex_cmds.c:4717
 #, c-format
-msgid "E661: Sorry, no '%s' help for %s"
-msgstr "E661: Przykro mi, brak '%s' pomocy dla %s"
+msgid "E661: No '%s' help for %s"
+msgstr "E661: Brak '%s' pomocy dla %s"
 
 #: ../ex_cmds.c:4719
 #, c-format
-msgid "E149: Sorry, no help for %s"
-msgstr "E149: Przykro mi, ale brak pomocy o %s"
+msgid "E149: No help for %s"
+msgstr "E149: Brak pomocy o %s"
 
 #: ../ex_cmds.c:4751
 #, c-format
-msgid "Sorry, help file \"%s\" not found"
-msgstr "Przykro mi, nie ma pliku pomocy \"%s\""
+msgid "Help file \"%s\" not found"
+msgstr "Nie ma pliku pomocy \"%s\""
 
 #: ../ex_cmds.c:5323
 #, c-format
@@ -2441,7 +2436,7 @@ msgstr "E216: Nie ma takiej grupy lub wydarzenia: %s"
 #: ../fileio.c:6090
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Autokomendy ---"
@@ -2465,7 +2460,7 @@ msgstr "E218: zbyt głębokie zagnieżdżenie autokomend"
 
 #: ../fileio.c:7143
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s Autokomend dla \"%s\""
 
 #: ../fileio.c:7149
@@ -2566,11 +2561,6 @@ msgstr "E471: wymagany argument"
 #: ../globals.h:998
 msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: po \\ powinno być /, ? lub &"
-
-#: ../globals.h:1000
-msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
-msgstr ""
-"E11: Niedozwolone w oknie wiersza poleceń; <CR> wykonuje, CTRL-C opuszcza"
 
 #: ../globals.h:1002
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
@@ -2959,126 +2949,6 @@ msgstr "szukanie dobiło GÓRY; kontynuacja od KOŃCA"
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "szukanie dobiło KOŃCA; kontynuacja od GÓRY"
 
-#: ../hardcopy.c:240
-msgid "E550: Missing colon"
-msgstr "E550: Brak dwukropka"
-
-#: ../hardcopy.c:252
-msgid "E551: Illegal component"
-msgstr "E551: Niedozwolona część"
-
-#: ../hardcopy.c:259
-msgid "E552: digit expected"
-msgstr "E552: oczekiwałem na cyfrę"
-
-#: ../hardcopy.c:473
-#, c-format
-msgid "Page %d"
-msgstr "Strona %d"
-
-#: ../hardcopy.c:597
-msgid "No text to be printed"
-msgstr "Brak tekstu do drukowania"
-
-#: ../hardcopy.c:668
-#, c-format
-msgid "Printing page %d (%d%%)"
-msgstr "Drukuję stronę %d (%d%%)"
-
-#: ../hardcopy.c:680
-#, c-format
-msgid " Copy %d of %d"
-msgstr " Kopia %d z %d"
-
-#: ../hardcopy.c:733
-#, c-format
-msgid "Printed: %s"
-msgstr "Wydrukowano: %s"
-
-#: ../hardcopy.c:740
-msgid "Printing aborted"
-msgstr "Drukowanie odwołane"
-
-#: ../hardcopy.c:1365
-msgid "E455: Error writing to PostScript output file"
-msgstr "E455: Nie można zapisać do wyjściowego pliku PostScriptu"
-
-#: ../hardcopy.c:1747
-#, c-format
-msgid "E624: Can't open file \"%s\""
-msgstr "E624: Nie mogę otworzyć pliku \"%s\""
-
-#: ../hardcopy.c:1756 ../hardcopy.c:2470
-#, c-format
-msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E457: Nie można odczytać pliku zasobów PostScriptu \"%s\""
-
-#: ../hardcopy.c:1772
-#, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
-msgstr "E618: plik \"%s\" nie jest plikiem zasobów PostScriptu"
-
-#: ../hardcopy.c:1788 ../hardcopy.c:1805 ../hardcopy.c:1844
-#, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E619: plik \"%s\" nie jest wspieranym plikiem zasobów PostScriptu"
-
-#: ../hardcopy.c:1856
-#, c-format
-msgid "E621: \"%s\" resource file has wrong version"
-msgstr "E621: \"%s\" nieprawidłowa wersja pliku zasobów"
-
-#: ../hardcopy.c:2225
-msgid "E673: Incompatible multi-byte encoding and character set."
-msgstr "E673: Niekompatybilne kodowanie wielobajtowe i zestaw znaków."
-
-#: ../hardcopy.c:2238
-msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
-msgstr "E674: printmbcharset nie może być pusty przy kodowaniu wielobajtowym."
-
-#: ../hardcopy.c:2254
-msgid "E675: No default font specified for multi-byte printing."
-msgstr "E675: Nie określono domyślnej czcionki dla drukowania wielobajtowego."
-
-#: ../hardcopy.c:2426
-msgid "E324: Can't open PostScript output file"
-msgstr "E324: Nie można otworzyć pliku PostScript do wyjścia"
-
-#: ../hardcopy.c:2458
-#, c-format
-msgid "E456: Can't open file \"%s\""
-msgstr "E456: Nie mogę otworzyć pliku \"%s\""
-
-#: ../hardcopy.c:2583
-msgid "E456: Can't find PostScript resource file \"prolog.ps\""
-msgstr "E456: Nie można znaleźć pliku zasobów PostScriptu \"prolog.ps\""
-
-#: ../hardcopy.c:2593
-msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
-msgstr "E456: Nie można znaleźć pliku zasobów PostScriptu \"cidfont.ps\""
-
-#: ../hardcopy.c:2622 ../hardcopy.c:2639 ../hardcopy.c:2665
-#, c-format
-msgid "E456: Can't find PostScript resource file \"%s.ps\""
-msgstr "E456: Nie można znaleźć pliku zasobów PostScriptu \"%s.ps\""
-
-#: ../hardcopy.c:2654
-#, c-format
-msgid "E620: Unable to convert to print encoding \"%s\""
-msgstr "E620: Nie można przekonwertować by drukować kodowanie \"%s\""
-
-#: ../hardcopy.c:2877
-msgid "Sending to printer..."
-msgstr "Przesyłam do drukarki..."
-
-#: ../hardcopy.c:2881
-msgid "E365: Failed to print PostScript file"
-msgstr "E365: Drukowanie pliku PostScript nie powiodło się"
-
-#: ../hardcopy.c:2883
-msgid "Print job sent."
-msgstr "Zadanie drukowanie przesłane."
-
 #: ../if_cscope.c:85
 msgid "Add a new database"
 msgstr "Dodaj nową bazę danych"
@@ -3358,7 +3228,7 @@ msgstr "-q [errorfile]  edytuj plik, zawierający pierwszy błąd"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -3421,10 +3291,6 @@ msgstr "-y\t\t\tTryb łatwy (jak \"evim\", bez trybów)"
 #: ../main.c:2207
 msgid "-R\t\t\tReadonly mode (like \"view\")"
 msgstr "-R\t\t\tTryb wyłącznie do odczytu (jak \"view\")"
-
-#: ../main.c:2208
-msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
-msgstr "-Z\t\t\tTryb ograniczenia (jak \"rvim\")"
 
 #: ../main.c:2209
 msgid "-m\t\t\tModifications (writing files) not allowed"
@@ -3550,7 +3416,7 @@ msgstr ""
 #: ../main.c:2240
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr ""
-"--startuptime <plik>\n"
+"--startuptime <plik> "
 "Zapisz wiadomości o długości startu do <plik>"
 
 #: ../main.c:2242
@@ -4038,12 +3904,8 @@ msgid "E325: ATTENTION"
 msgstr "E325: UWAGA"
 
 #: ../memline.c:3222
-msgid ""
-"\n"
-"Found a swap file by the name \""
-msgstr ""
-"\n"
-"Znalazłem plik wymiany o nazwie \""
+msgid "Found a swap file by the name \""
+msgstr "Znalazłem plik wymiany o nazwie \""
 
 #: ../memline.c:3226
 msgid "While opening file \""
@@ -4075,8 +3937,8 @@ msgid "(2) An edit session for this file crashed.\n"
 msgstr "(2) Sesja edycji dla pliku załamała się.\n"
 
 #: ../memline.c:3247
-msgid "    If this is the case, use \":recover\" or \"vim -r "
-msgstr "    Jeśli tak, to użyj \":recover\" lub \"vim -r "
+msgid "    If this is the case, use \":recover\" or \"nvim -r "
+msgstr "    Jeśli tak, to użyj \":recover\" lub \"nvim -r "
 
 #: ../memline.c:3249
 msgid ""
@@ -4724,12 +4586,8 @@ msgstr ""
 "Nie mogę wykonać powłoki "
 
 #: ../os/shell.c:439
-msgid ""
-"\n"
-"shell returned "
-msgstr ""
-"\n"
-"powłoka zwróciła "
+msgid "shell returned "
+msgstr "powłoka zwróciła "
 
 #: ../os_unix.c:465 ../os_unix.c:471
 msgid ""
@@ -5279,8 +5137,8 @@ msgstr "Ostrzeżenie: region %s nie jest wspierany"
 
 #: ../spell.c:4550
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Czytam plik afiksów %s ..."
+msgid "Reading affix file %s..."
+msgstr "Czytam plik afiksów %s..."
 
 #: ../spell.c:4589 ../spell.c:5635 ../spell.c:6140
 #, c-format
@@ -5442,8 +5300,8 @@ msgstr "Wartość %s różni się od tej użytej w innym pliku .aff"
 
 #: ../spell.c:5602
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Czytam plik słownika %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Czytam plik słownika %s..."
 
 #: ../spell.c:5611
 #, c-format
@@ -5480,8 +5338,8 @@ msgstr "Zignorowałem %d słów ze znakami nie ASCII w %s"
 
 #: ../spell.c:6115
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Odczytuję plik wyrazów %s ..."
+msgid "Reading word file %s..."
+msgstr "Odczytuję plik wyrazów %s..."
 
 #: ../spell.c:6155
 #, c-format
@@ -5550,8 +5408,8 @@ msgstr "Całkowita liczba słów: %d"
 
 #: ../spell.c:7655
 #, c-format
-msgid "Writing suggestion file %s ..."
-msgstr "Zapisuję plik sugestii %s ..."
+msgid "Writing suggestion file %s..."
+msgstr "Zapisuję plik sugestii %s..."
 
 #: ../spell.c:7707 ../spell.c:7927
 #, c-format
@@ -5577,8 +5435,8 @@ msgstr "Ostrzeżenie: określono zarówno złożenia jak i NOBREAK"
 
 #: ../spell.c:7920
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Zapisuję plik sprawdzania pisowni %s ..."
+msgid "Writing spell file %s..."
+msgstr "Zapisuję plik sprawdzania pisowni %s..."
 
 #: ../spell.c:7925
 msgid "Done!"
@@ -5604,13 +5462,13 @@ msgid "E763: Word characters differ between spell files"
 msgstr "E763: Znaki wyrazów różnią się między plikami sprawdzania pisowni"
 
 #: ../spell.c:8684
-msgid "Sorry, no suggestions"
-msgstr "Przykro mi, brak podpowiedzi"
+msgid "No suggestions"
+msgstr "Brak podpowiedzi"
 
 #: ../spell.c:8687
 #, c-format
-msgid "Sorry, only %<PRId64> suggestions"
-msgstr "Przykro mi, tylko %<PRId64> podpowiedzi"
+msgid "Only %<PRId64> suggestions"
+msgstr "Tylko %<PRId64> podpowiedzi"
 
 #. for when 'cmdheight' > 1
 #. avoid more prompt
@@ -5917,9 +5775,9 @@ msgstr "E424: Zbyt wiele różnych atrybutów podkreślania w użyciu"
 msgid "E669: Unprintable character in group name"
 msgstr "E669: Niedrukowalny znak w nazwie grupy"
 
-#: ../syntax.c:7434
-msgid "W18: Invalid character in group name"
-msgstr "W18: nieprawidłowy znak w nazwie grupy"
+#: ../highlight_group.c:1756
+msgid "E5248: Invalid character in group name"
+msgstr "E5248: nieprawidłowy znak w nazwie grupy"
 
 #: ../syntax.c:7448
 msgid "E849: Too many highlight and syntax groups"

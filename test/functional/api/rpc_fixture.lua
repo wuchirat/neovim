@@ -1,18 +1,11 @@
-local deps_prefix = './.deps/usr'
-if os.getenv('DEPS_PREFIX') then
-  deps_prefix = os.getenv('DEPS_PREFIX')
-end
+--- RPC server fixture.
+--
+-- Lua's paths are passed as arguments to reflect the path in the test itself.
+package.path = arg[1]
+package.cpath = arg[2]
 
-package.path = deps_prefix .. '/share/lua/5.1/?.lua;' ..
-               deps_prefix .. '/share/lua/5.1/?/init.lua;' ..
-               package.path
-
-package.cpath = deps_prefix .. '/lib/lua/5.1/?.so;' ..
-                package.cpath
-
-local mpack = require('mpack')
-local StdioStream = require('nvim.stdio_stream')
-local Session = require('nvim.session')
+local StdioStream = require 'test.client.uv_stream'.StdioStream
+local Session = require 'test.client.session'
 
 local stdio_stream = StdioStream.open()
 local session = Session.new(stdio_stream)
@@ -22,17 +15,18 @@ local function on_request(method, args)
     return 'ok'
   elseif method == 'write_stderr' then
     io.stderr:write(args[1])
-    return "done!"
-  elseif method == "exit" then
+    return 'done!'
+  elseif method == 'exit' then
     session:stop()
-    return mpack.NIL
+    return vim.NIL
   end
 end
 
 local function on_notification(event, args)
   if event == 'ping' and #args == 0 then
-    session:notify("vim_eval", "rpcnotify(g:channel, 'pong')")
+    session:notify('nvim_eval', "rpcnotify(g:channel, 'pong')")
   end
 end
 
 session:run(on_request, on_notification)
+session:close()

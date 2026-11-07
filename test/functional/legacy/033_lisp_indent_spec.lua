@@ -1,14 +1,18 @@
 -- Test for 'lisp'
 -- If the lisp feature is not enabled, this will fail!
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear, feed, insert = helpers.clear, helpers.feed, helpers.insert
-local command, expect = helpers.command, helpers.expect
-local wait = helpers.wait
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup = t.describe, t.it, t.setup
+local clear, feed, insert = n.clear, n.feed, n.insert
+local command, expect = n.command, n.expect
+local poke_eventloop = n.poke_eventloop
 
 describe('lisp indent', function()
   setup(clear)
 
+  -- luacheck: ignore 621 (Indentation)
   it('is working', function()
     insert([[
       (defun html-file (base)
@@ -22,7 +26,7 @@ describe('lisp indent', function()
       :if-exists :supersede)
       (let ((,ti ,title))
       (as title ,ti)
-      (with center 
+      (with center
       (as h2 (string-upcase ,ti)))
       (brs 3)
       ,@body))))
@@ -38,7 +42,7 @@ describe('lisp indent', function()
     command('set lisp')
     command('/^(defun')
     feed('=G:/^(defun/,$yank A<cr>')
-    wait()
+    poke_eventloop()
 
     -- Put @a and clean empty line
     command('%d')
@@ -58,7 +62,7 @@ describe('lisp indent', function()
       		       :if-exists :supersede)
              (let ((,ti ,title))
       	 (as title ,ti)
-      	 (with center 
+      	 (with center
       	       (as h2 (string-upcase ,ti)))
       	 (brs 3)
       	 ,@body))))

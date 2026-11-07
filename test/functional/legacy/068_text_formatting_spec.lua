@@ -1,14 +1,17 @@
-local helpers = require('test.functional.helpers')(after_each)
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
 
-local feed = helpers.feed
-local clear = helpers.clear
-local insert = helpers.insert
-local feed_command = helpers.feed_command
-local expect = helpers.expect
+local describe, it, setup = t.describe, t.it, t.setup
+local feed = n.feed
+local clear = n.clear
+local insert = n.insert
+local feed_command = n.feed_command
+local expect = n.expect
 
 describe('text formatting', function()
   setup(clear)
 
+  -- luacheck: ignore 613 (Trailing whitespace in a string)
   it('is working', function()
     -- The control character <C-A> (byte \x01) needs to be put in the buffer
     -- directly.  But the insert function sends the text to nvim in insert

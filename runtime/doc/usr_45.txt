@@ -1,8 +1,11 @@
 *usr_45.txt*	Nvim
 
-		     VIM USER MANUAL - by Bram Moolenaar
 
-			     Select your language
+		     VIM USER MANUAL	by Bram Moolenaar
+
+
+==============================================================================
+Select your language (locale)
 
 
 The messages in Vim can be given in several languages.  This chapter explains
@@ -30,13 +33,6 @@ this command: >
 
 If it replies with "C", this means the default is being used, which is
 English.
-
-	Note:
-	Using different languages only works when Vim was compiled to handle
-	it.  To find out if it works, use the ":version" command and check the
-	output for "+gettext" and "+multi_lang".  If they are there, you are
-	OK.  If you see "-gettext" or "-multi_lang" you will have to find
-	another Vim.
 
 What if you would like your messages in a different language?  There are
 several ways.  Which one you should use depends on the capabilities of your
@@ -78,8 +74,8 @@ directory src/po/README.txt.
 programmer.  You must know both English and the language you are translating
 to, of course.
    When you are satisfied with the translation, consider making it available
-to others.  Upload it at vim-online (http://vim.sf.net) or e-mail it to
-the Vim maintainer <maintainer@vim.org>.  Or both.
+to others.  Upload it to https://github.com/vim/vim or e-mail it to the Vim
+maintainer <maintainer@vim.org>.  Or both.
 
 ==============================================================================
 *45.2*	Language for Menus
@@ -152,12 +148,6 @@ language than the text.
 language, the default should work fine and you don't need to do anything.  The
 following is only relevant when you want to edit different languages.
 
-	Note:
-	Using different encodings only works when Vim was compiled to handle
-	it.  To find out if it works, use the ":version" command and check the
-	output for "+multi_byte".  If it's there, you are OK.  If you see
-	"-multi_byte" you will have to find another Vim.
-
 
 USING UNICODE IN THE GUI
 
@@ -179,10 +169,7 @@ script files, etc.  You can regard 'encoding' as the setting for the internals
 of Vim.
    This example assumes you have this font on your system.  The name in the
 example is for the X Window System.  This font is in a package that is used to
-enhance xterm with Unicode support.  If you don't have this font, you might
-find it here:
-
-	http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz ~
+enhance xterm with Unicode support.
 
 For MS-Windows, some fonts have a limited number of Unicode characters.  Try
 using the "Courier New" font.  You can use the Edit/Select Font... menu to
@@ -191,10 +178,7 @@ though.  Example: >
 
 	:set guifont=courier_new:h12
 
-If it doesn't work well, try getting a fontpack.  If Microsoft didn't move it,
-you can find it here:
-
-	http://www.microsoft.com/typography/fonts/default.aspx ~
+If it doesn't work well, try getting a fontpack.
 
 Now you have told Vim to use Unicode internally and display text with a
 Unicode font.
@@ -203,15 +187,13 @@ USING UNICODE IN A UNICODE TERMINAL
 
 There are terminals that support Unicode directly.  The standard xterm that
 comes with XFree86 is one of them.  Let's use that as an example.
-   First of all, the xterm must have been compiled with Unicode support.  See
-|UTF8-xterm| how to check that and how to compile it when needed.
+   First of all, the xterm must have been compiled with Unicode support.
    Start the xterm with the "-u8" argument.  You might also need so specify a
 font.  Example: >
 
    xterm -u8 -fn -misc-fixed-medium-r-normal--18-120-100-100-c-90-iso10646-1
 
-Now you can run Vim inside this terminal.  Set 'encoding' to "utf-8" as
-before.  That's all.
+Now you can run Vim inside this terminal.
 
 
 USING UNICODE IN AN ORDINARY TERMINAL
@@ -314,8 +296,7 @@ can use digraphs.  This was already explained in |24.9|.
 keyboard, you will want to use an Input Method (IM).  This requires learning
 the translation from typed keys to resulting character.  When you need an IM
 you probably already have one on your system.  It should work with Vim like
-with other programs.  For details see |mbyte-XIM| for the X Window system and
-|mbyte-IME| for MS-Windows.
+with other programs.
 
 
 KEYMAPS
@@ -382,14 +363,16 @@ LAST RESORT
 
 If all other methods fail, you can enter any character with CTRL-V:
 
-	encoding   type			range ~
-	8-bit	   CTRL-V 123		decimal 0-255
-	8-bit	   CTRL-V x a1		hexadecimal 00-ff
-	16-bit     CTRL-V u 013b	hexadecimal 0000-ffff
-	31-bit	   CTRL-V U 001303a4	hexadecimal 00000000-7fffffff
+	encoding	type			range ~
+	8-bit		CTRL-V 123		decimal 0-255
+	8-bit		CTRL-V x a1		hexadecimal 00-ff
+	16-bit		CTRL-V u 013b		hexadecimal 0000-ffff
+	31-bit		CTRL-V U 001303a4	hexadecimal 00000000-7fffffff
 
 Don't type the spaces.  See |i_CTRL-V_digit| for the details.
 
 ==============================================================================
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|
+
+vim:tw=78:ts=8:noet:ft=help:norl:

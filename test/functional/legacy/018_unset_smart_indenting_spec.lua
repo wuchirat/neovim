@@ -1,12 +1,14 @@
 -- Tests for not doing smart indenting when it isn't set.
 
-local helpers = require('test.functional.helpers')(after_each)
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
 
-local feed = helpers.feed
-local clear = helpers.clear
-local insert = helpers.insert
-local expect = helpers.expect
-local feed_command = helpers.feed_command
+local describe, it, before_each = t.describe, t.it, t.before_each
+local feed = n.feed
+local clear = n.clear
+local insert = n.insert
+local expect = n.expect
+local feed_command = n.feed_command
 
 describe('unset smart indenting', function()
   before_each(clear)

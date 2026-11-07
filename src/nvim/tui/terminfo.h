@@ -1,10 +1,11 @@
-#ifndef NVIM_TUI_TERMINFO_H
-#define NVIM_TUI_TERMINFO_H
+#pragma once
 
-#include <unibilium.h>
+#include "nvim/api/private/defs.h"  // IWYU pragma: keep
+#include "nvim/tui/terminfo_defs.h"
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "tui/terminfo.h.generated.h"
-#endif
+typedef struct {
+  long num;
+  char *string;
+} TPVAR;
 
-#endif  // NVIM_TUI_TERMINFO_H
+#include "tui/terminfo.h.generated.h"

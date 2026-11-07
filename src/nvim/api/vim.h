@@ -1,11 +1,8 @@
-#ifndef NVIM_API_VIM_H
-#define NVIM_API_VIM_H
+#pragma once
 
-#include <stdint.h>
+#include <stdint.h>  // IWYU pragma: keep
 
-#include "nvim/api/private/defs.h"
+#include "nvim/api/keysets_defs.h"  // IWYU pragma: keep
+#include "nvim/api/private/defs.h"  // IWYU pragma: keep
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "api/vim.h.generated.h"
-#endif
-#endif  // NVIM_API_VIM_H
+#include "api/vim.h.generated.h"

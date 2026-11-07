@@ -1,8 +1,11 @@
 -- Test for character searches
 
-local helpers = require('test.functional.helpers')(after_each)
-local feed, insert = helpers.feed, helpers.insert
-local clear, feed_command, expect = helpers.clear, helpers.feed_command, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup = t.describe, t.it, t.setup
+local feed, insert = n.feed, n.insert
+local clear, feed_command, expect = n.clear, n.feed_command, n.expect
 
 describe('charsearch', function()
   setup(clear)

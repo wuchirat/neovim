@@ -1,43 +1,41 @@
 *message.txt*   Nvim
 
 
-		  VIM REFERENCE MANUAL    by Bram Moolenaar
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
+
+==============================================================================
+Messages
 
 This file contains an alphabetical list of messages and error messages that
 Vim produces.  You can use this if you don't understand what the message
 means.  It is not complete though.
 
-                                      Type <M-]> to see the table of contents.
+                                      Type |gO| to see the table of contents.
 
 ==============================================================================
-1. Old messages			*:messages* *:mes* *message-history*
+Messages history			*:messages* *:mes* *message-history*
 
 The ":messages" command can be used to view previously given messages.  This
 is especially useful when messages have been overwritten or truncated.  This
 depends on the 'shortmess' option.
 
-	:messages		Show all messages.
+	:mes[sages]		Show all messages.
 
-	:{count}messages	Show the {count} most recent messages.
+	:{count}mes[sages]	Show the {count} most recent messages.
 
-	:messages clear		Clear all messages.
+	:mes[sages] clear	Clear all messages.
 
-	:{count}messages clear	Clear messages, keeping only the {count} most
+	:{count}mes[sages] clear
+				Clear messages, keeping only the {count} most
 				recent ones.
 
-The number of remembered messages is fixed at 20 for the tiny version and 200
-for other versions.
+The number of remembered messages is determined by the 'messagesopt' option.
 
 								*g<*
-The "g<" command can be used to see the last page of previous command output.
-This is especially useful if you accidentally typed <Space> at the hit-enter
-prompt.  You are then back at the hit-enter prompt and can then scroll further
-back.
-Note: If the output has been stopped with "q" at the more prompt, it will only
-be displayed up to this point.
-The previous command output is cleared when another command produces output.
-The "g<" output is not redirected.
+The "g<" command shows the last page of previous command output.
+This only works when 'more' is set.
+With |ui2|: "g<" shows recent messages in the |pager|.
 
 If you want to find help on a specific (error) message, use the ID at the
 start of the message.  For example, to get help on the message: >
@@ -57,19 +55,19 @@ If you are lazy, it also works without the shift key: >
 	:help e72
 
 ==============================================================================
-2. Error messages				*error-messages* *errors*
+Error messages					*error-messages* *errors*
 
 When an error message is displayed, but it is removed before you could read
 it, you can see it again with: >
-  :echo errmsg
+  :echo v:errmsg
 Or view a list of recent messages with: >
   :messages
 See `:messages` above.
 
 LIST OF MESSAGES
-			*E222* *E228* *E232* *E256* *E293* *E298* *E304* *E317*
+			*E222* *E228* *E232* *E293* *E298* *E304* *E317*
 			*E318* *E356* *E438* *E439* *E440* *E316* *E320* *E322*
-			*E323* *E341* *E473* *E570* *E685*  >
+			*E323* *E341* *E473* *E570* *E685* *E292*  >
   Add to read buffer
   makemap: Illegal mode
   Cannot create BalloonEval with both message and callback
@@ -90,6 +88,7 @@ LIST OF MESSAGES
   Internal error
   Internal error: {function}
   fatal error in cs_manage_matches
+  Invalid count for del_bytes(): {N}
 
 This is an internal error.  If you can reproduce it, please send in a bug
 report. |bugs|
@@ -99,6 +98,14 @@ report. |bugs|
   Found a swap file by the name ...
 
 See |ATTENTION|.
+
+							*E787*  >
+  Buffer changed unexpectedly
+
+An event handler changed a buffer while a command was using it:
+- A |FileChangedRO| handler changed buffers during |:diffget| or |:diffput|.
+- A |Progress| handler changed the buffer during a |:write|.  The write is
+  aborted, and the original file is restored ('writebackup').
 
 							*E92*  >
   Buffer {N} not found
@@ -110,7 +117,15 @@ wiped out a buffer which contains a mark or is referenced in another way.
 							*E95*  >
   Buffer with this name already exists
 
-You cannot have two buffers with the same name.
+You cannot have two buffers with exactly the same name.  This includes the
+path leading to the file.
+
+							*E1513* >
+  Cannot switch buffer. 'winfixbuf' is enabled
+
+If a window has 'winfixbuf' enabled, you cannot change that window's current
+buffer.  You need to set 'nowinfixbuf' before continuing.  You may use [!] to
+force the window to switch buffers, if your command supports it.
 
 							*E72*  >
   Close error on swap file
@@ -239,6 +254,9 @@ format of the file.  The file will not be marked unmodified.  If you care
 about the loss of information, set the 'fileencoding' option to another value
 that can handle the characters in the buffer and write again.  If you don't
 care, you can abandon the buffer or reset the 'modified' option.
+If there is a backup file, when 'writebackup' or 'backup' is set, it will not
+be deleted, so you can move it back into place if you want to discard the
+changes.
 
 							*E302*  >
   Could not rename swap file
@@ -322,7 +340,7 @@ You can switch the 'write' option on with ":set write".
 							*E25*  >
   Nvim does not have a built-in GUI
 
-Neovim does not have a built in GUI, so `:gvim` and `:gui` don't work.
+Nvim does not have a built in GUI, so `:gvim` and `:gui` don't work.
 
 							*E49*  >
   Invalid scroll size
@@ -355,7 +373,7 @@ the other way around.  It should be used like this: {foo,bar}.  This matches
   ml_get: invalid lnum: {number}
 
 This is an internal Vim error.  Please try to find out how it can be
-reproduced, and submit a bug report |bugreport.vim|.
+reproduced, and submit a |bug-report|.
 
 							*E173*  >
   {number} more files to edit
@@ -449,12 +467,6 @@ changed.  To avoid the message reset the 'warn' option.
 Something inside Vim went wrong and resulted in a NULL pointer.  If you know
 how to reproduce this problem, please report it. |bugs|
 
-							*E172*  >
-  Only one file name allowed
-
-The ":edit" command only accepts one file name.  When you want to specify
-several files for editing use ":next" |:next|.
-
 						*E41* *E82* *E83* *E342*  >
   Out of memory!
   Out of memory!  (allocating {number} bytes)
@@ -514,19 +526,10 @@ If you type "gq", it will execute this mapping, which will call "gq" again.
 							*E22*  >
   Scripts nested too deep
 
-Scripts can be read with the "-s" command-line argument and with the ":source"
-command.  The script can then again read another script.  This can continue
-for about 14 levels.  When more nesting is done, Vim assumes that there is a
-recursive loop somewhere and stops with this error message.
-
-							*E319*  >
-  The command is not available in this version
-
-You have used a command that is not present in the version of Vim you are
-using.  When compiling Vim, many different features can be enabled or
-disabled.  This depends on how big Vim has chosen to be and the operating
-system.  See |+feature-list| for when which feature is available.  The
-|:version| command shows which feature Vim was compiled with.
+Scripts can be read with the "-s" command-line argument and with the
+`:source!` command.  The script can then again read another script.  This can
+continue for about 14 levels.  When more nesting is done, Vim assumes that
+there is a recursive loop and stops with this error message.
 
 							*E300*  >
   Swap file already exists (symlink attack?)
@@ -543,18 +546,10 @@ attempting a symlink attack (could happen when editing a file in /tmp or when
 
 Vim (and Vi) expect tags files to be sorted in ASCII order.  Binary searching
 can then be used, which is a lot faster than a linear search.  If your tags
-files are not properly sorted, reset the |'tagbsearch'| option.
+files are not properly sorted, reset the 'tagbsearch' option.
 This message is only given when Vim detects a problem when searching for a
 tag.  Sometimes this message is not given, even though the tags file is not
 properly sorted.
-
-							*E460*  >
-  The resource fork would be lost (add ! to override)
-
-On the Macintosh (classic), when writing a file, Vim attempts to preserve all
-info about a file, including its resource fork.  If this is not possible you
-get this error message.  Append "!" to the command name to write anyway (and
-lose the info).
 
 							*E424*  >
   Too many different highlighting attributes in use
@@ -564,10 +559,11 @@ into this limit, you have used too many |:highlight| commands with different
 arguments.  A ":highlight link" is not counted.
 
 							*E77*  >
-  Too many file names
+  Too many file names (glob not allowed)
 
 When expanding file names, more than one match was found.  Only one match is
 allowed for the command that was used.
+Use |:next| if you want to edit all files matching a glob pattern.
 
 							*E303*  >
   Unable to open swap file for "{filename}", recovery impossible
@@ -575,7 +571,8 @@ allowed for the command that was used.
 Vim was not able to create a swap file.  You can still edit the file, but if
 Vim unexpectedly exits the changes will be lost.  And Vim may consume a lot of
 memory when editing a big file.  You may want to change the 'directory' option
-to avoid this error.  See |swap-file|.
+to avoid this error.  This error is not given when 'directory' is empty.  See
+|swap-file|.
 
 							*E140*  >
   Use ! to write partial buffer
@@ -590,9 +587,7 @@ when using ":w"), therefore Vim requires using a !  after the command, e.g.:
   VirtualBinding
 
 Messages like this appear when starting up.  This is not a Vim problem, your
-X11 configuration is wrong.  You can find a hint on how to solve this here:
-http://groups.yahoo.com/group/solarisonintel/message/12179.
-[this URL is no longer valid]
+X11 configuration is wrong.
 
 							*W10*  >
   Warning: Changing a readonly file
@@ -620,6 +615,23 @@ probably means that some other program changed the file.  You will have to
 find out what happened, and decide which version of the file you want to keep.
 Set the 'autoread' option if you want to do this automatically.
 This message is not given when 'buftype' is not empty.
+Also see the |FileChangedShell| autocommand.
+
+You will be given a dialog with the following options:
+
+"OK":		Dismiss the warning and continue editing.  No changes are
+		loaded, the buffer remains as it is.
+
+"Load File":	Reload the file from disk, replacing the current buffer
+		contents.  Any changes you made in Vim that haven't been saved
+		will be lost.
+
+"Load File and Options":
+		Reload the file from disk and, in addition, apply relevant
+		file settings, such as indentation, syntax highlighting, text
+		width, and other filetype-specific options.  This ensures the
+		buffer matches the file's intended configuration according to
+		your current settings and autocommands.
 
 There is one situation where you get this message even though there is nothing
 wrong: If you save a file in Windows on the day the daylight saving time
@@ -630,6 +642,9 @@ starts.  It can be fixed in one of these ways:
 - Disable "automatically adjust clock for daylight saving changes".
 - Just write the file again the next day.  Or set your clock to the next day,
   write the file twice and set the clock back.
+
+If you get W11 all the time, you may need to disable "Acronis Active
+Protection" or register Vim as a trusted service/application.
 
 							*W12*  >
   Warning: File "{filename}" has changed and the buffer was changed in Vim as well
@@ -686,19 +701,22 @@ being disabled.  Remove the 'C' flag from the 'cpoptions' option to enable it.
 							*E471*  >
   Argument required
 
-This happens when an Ex command with mandatory argument(s) was executed, but
-no argument has been specified.
+Ex command was executed without a mandatory argument(s).
 
-							*E474* *E475*  >
+							*E474* *E475* *E983*  >
   Invalid argument
   Invalid argument: {arg}
+  Duplicate argument: {arg}
 
-An Ex command has been executed, but an invalid argument has been specified.
+Ex command or function was given an invalid argument. Or |jobstart()| or
+|system()| was given a non-executable command.
 
 							*E488*  >
   Trailing characters
+  Trailing characters: {text}
 
-An argument has been added to an Ex command that does not permit one.
+An argument was given to an Ex command that does not permit one.
+Or the argument has invalid characters and has not been recognized.
 
 							*E477* *E478*  >
   No ! allowed
@@ -750,93 +768,172 @@ a user-defined command.
 You tried to set an option after startup that only allows changes during
 startup.
 
+							*E943*  >
+  Command table needs to be updated, run 'make'
+
+This can only happen when changing the source code, after adding a command in
+src/ex_cmds.lua.  Update the lookup table by re-running the build.
+
+							*E970*  >
+  Failed to initialize lua interpreter
+  Failed to initialize builtin lua modules
+
+Nvim failed to initialize the Lua interpreter or its builtin modules during
+startup. This is a fatal error that prevents Nvim from running.
+
+							*E5107*  >
+  Lua: {error}
+
+Lua code compilation (loadbuffer) failed when executing |:lua| commands or
+functions. {error} contains the Lua syntax or compilation error message.
+
+							*E5108*  >
+  Lua function: {error}
+  Lua: {error}
+
+Lua code execution (pcall) failed, when executing Lua code or during Lua
+function completion. {error} contains the Lua runtime error message and
+traceback.
+
+							*E5109*  >
+  Lua: {error}
+
+Lua code compilation (loadbuffer) failed during |:luado|. {error} contains the
+Lua syntax or compilation error message.
+
+							*E5110*  >
+  Lua: {error}
+
+Lua code execution (pcall) failed during |:luado| command initialization.
+{error} contains the Lua runtime error message and traceback.
+
+							*E5111*  >
+  Lua: {error}
+
+Lua code execution failed in |:luado| callback or during Lua script loading.
+{error} contains the Lua runtime error message and traceback.
+
+							*E5112*  >
+  Lua chunk: {error}
+
+Lua chunk compilation failed. The loadstring() function returned an error
+when trying to compile the Lua code. {error} contains the compilation error
+message.
+
+							*E5113*  >
+  Lua chunk: {error}
+
+Lua chunk execution failed after successful compilation. {error} contains the
+Lua runtime error message and traceback.
+
+							*E5114*  >
+  Converting print argument #{i}: {error}
+
+Lua `print()` failed to convert argument number {i} to a string. {error}
+contains the conversion error details.
+
+							*E5115*  >
+  Loading Lua debug string: {error}
+
+Failed to load (compile) a Lua debug command string. {error} contains the
+compilation error message.
+
+							*E5116*  >
+  Calling Lua debug string: {error}
+
+Failed to execute a Lua debug command string. {error} contains the runtime
+error message and traceback.
+
+							*E5117*  >
+  Lua mapping no longer exists
+
+Replayed keys (|.|, |CmdAtom| `keys`, or keys captured by |vim.on_key()|)
+referenced a Lua-callback mapping that was deleted or redefined since.
+
 ==============================================================================
-3. Messages						*messages*
+Messages						*messages*
 
-This is an (incomplete) overview of various messages that Vim gives:
+Messages are shown in the |ui2| messages area. If they exceed ("overflow") the
+area then they will be collapsed and a "spill" indicator will indicate how
+many lines were collapsed. Use |g<| to see the full messages.
 
-			*hit-enter* *press-enter* *hit-return*
-			*press-return* *hit-enter-prompt*
-
-  Press ENTER or type command to continue
-
-This message is given when there is something on the screen for you to read,
-and the screen is about to be redrawn:
-- After executing an external command (e.g., ":!ls" and "=").
-- Something is displayed on the status line that is longer than the width of
-  the window, or runs into the 'showcmd' or 'ruler' output.
-
--> Press <Enter> or <Space> to redraw the screen and continue, without that
-   key being used otherwise.
--> Press ':' or any other Normal mode command character to start that command.
--> Press 'k', <Up>, 'u', 'b' or 'g' to scroll back in the messages.  This
-   works the same way as at the |more-prompt|.  Only works when 'more' is on.
--> Pressing 'j', 'f', 'd' or <Down> is ignored when messages scrolled off the
-   top of the screen and 'more' is on, to avoid that typing one 'j' or 'f' too
-   many causes the messages to disappear.
--> Press <C-Y> to copy (yank) a modeless selection to the clipboard register.
--> Use a menu.  The characters defined for Cmdline-mode are used.
--> When 'mouse' contains the 'r' flag, clicking the left mouse button works
-   like pressing <Space>.  This makes it impossible to select text though.
--> For the GUI clicking the left mouse button in the last line works like
-   pressing <Space>.
-
-If you accidentally hit <Enter> or <Space> and you want to see the displayed
-text then use |g<|.  This only works when 'more' is set.
-
-To reduce the number of hit-enter prompts:
+To avoid overflow ("spill") of the |ui2| messages area:
 - Set 'cmdheight' to 2 or higher.
 - Add flags to 'shortmess'.
 - Reset 'showcmd' and/or 'ruler'.
 
-If your script causes the hit-enter prompt and you don't know why, you may
-find the |v:scrollstart| variable useful.
-
-Also see 'mouse'.  The hit-enter message is highlighted with the |hl-Question|
-group.
-
-
 						*more-prompt* *pager*  >
-  -- More --
-  -- More -- SPACE/d/j: screen/page/line down, b/u/k: up, q: quit
+  f/d/j: screen/page/line down, b/u/k: up, <Esc>: stop paging
 
-This message is given when the screen is filled with messages.  It is only
-given when the 'more' option is on.  It is highlighted with the |hl-MoreMsg|
-group.
+This message is given when the |ui2| modal dialog is active.
+Only when the 'more' option is on.
+Highlighted with the |hl-MoreMsg| group.
 
-Type					effect ~
-     <CR> or <NL> or j or <Down>	one more line
-     d					down a page (half a screen)
-     <Space> or f or <PageDown>		down a screen
-     G					down all the way, until the hit-enter
-					prompt
+With |ui2|: use "g<" to show messages in the pager.  When a command emits a
+message while a previous message is still displayed, the messages are
+collected in the pager window without focusing it: type "g<" to focus it, or
+any other typed key to dismiss it.
 
-     <BS> or k or <Up>			one line back
-     u					up a page (half a screen)
-     b or <PageUp>			back a screen
-     g					back to the start
+     Type					Effect ~
+     <CR> or <NL> or j or <Down>		one more line
+     d						down a page (half a screen)
+     <Space> or f or <PageDown> or CTRL-F	down a screen
+     G						down all the way, until the
+						hit-enter prompt
 
-     q, <Esc> or CTRL-C			stop the listing
-     :					stop the listing and enter a
-					     command-line
-    <C-Y>				yank (copy) a modeless selection to
-					the clipboard ("* and "+ registers)
-    {menu-entry}			what the menu is defined to in
-					Cmdline-mode.
-    <LeftMouse> (*)			next page
+     Key					Action ~
+     <BS> or k or <Up>				one line back
+     u						up a page (half a screen)
+     b or <PageUp> or CTRL-B			back a screen
+     g						back to the start
 
-Any other key causes the meaning of the keys to be displayed.
+     q, <Esc> or CTRL-C				stop the listing
+     :						stop the listing and enter a
+						command-line
+    <C-Y>					yank (copy) a modeless
+						selection to the clipboard
+						("* and "+ registers)
+    {menu-entry}				what the menu is defined to
+						in Cmdline-mode.
+    <LeftMouse>					next page*
 
-(*)  Clicking the left mouse button only works:
-     - For the GUI: in the last line of the screen.
-     - When 'r' is included in 'mouse' (but then selecting text won't work).
 
+==============================================================================
+Progress messages					*progress-message*
 
-Note: The typed key is directly obtained from the terminal, it is not mapped
-and typeahead is ignored.
+Plugins and core Nvim features can emit "progress" |ui-messages| to report the
+state of long-running tasks.
 
-The |g<| command can be used to see the last page of previous command output.
-This is especially useful if you accidentally typed <Space> at the hit-enter
-prompt.
+Create or update a progress-message by calling |nvim_echo()| with
+`kind='progress'`. Each message has a unique message-id, returned by
+`nvim_echo`. You can specify the id when calling `nvim_echo` to update an
+existing progress-message.
 
- vim:tw=78:ts=8:ft=help:norl:
+Note: To avoid a "dangling" progress-message, always emit a non-"running"
+`status`, when your task is done; otherwise consumers (including Nvim itself)
+tracking the task by its message-id cannot know when the task is done.
+
+Events: ~
+    • msg_show |ui-messages| event is fired for ext-ui upon creation/update of
+      a progress-message
+    • Updating or creating a progress message also triggers the |Progress|
+      autocommand.
+
+Example: >lua
+    local progress = {
+      kind = 'progress',
+      percent = 10,
+      source = 'my-plugin',
+      status = 'running',
+      title = 'term',
+    }
+    progress.id = vim.api.nvim_echo({ { 'searching...' } }, true, progress)
+    progress.percent = 50
+    vim.api.nvim_echo({ { 'searching' } }, true, progress)
+    progress.status = 'success'
+    progress.percent = 100
+    vim.api.nvim_echo({ { 'done' } }, true, progress)
+<
+See also: |nvim_echo()| |ui-messages| |Progress|
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1,11 +1,14 @@
 -- Test for regexp patterns with multi-byte support, using utf-8.
--- See test64 for the non-multi-byte tests.
+-- See test_regexp_latin.vim for the non-multi-byte tests.
 -- A pattern that gives the expected result produces OK, so that we know it was
 -- actually tried.
 
-local helpers = require('test.functional.helpers')(after_each)
-local insert, source = helpers.insert, helpers.source
-local clear, expect = helpers.clear, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup = t.describe, t.it, t.setup
+local insert, source = n.insert, n.source
+local clear, expect = n.clear, n.expect
 
 describe('regex with multi-byte', function()
   setup(clear)

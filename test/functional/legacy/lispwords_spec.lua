@@ -1,14 +1,17 @@
-local helpers = require('test.functional.helpers')(after_each)
-local clear = helpers.clear
-local eq = helpers.eq
-local eval = helpers.eval
-local command = helpers.command
-local source = helpers.source
+local t = require('test.testutil')
+local n = require('test.functional.testnvim')()
+
+local describe, it, before_each = t.describe, t.it, t.before_each
+local clear = n.clear
+local eq = t.eq
+local eval = n.eval
+local command = n.command
+local source = n.source
 
 describe('lispwords', function()
   before_each(clear)
 
-  it('should be set global-local',function()
+  it('should be set global-local', function()
     source([[
       setglobal lispwords=foo,bar,baz
       setlocal lispwords-=foo

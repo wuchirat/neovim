@@ -1,12 +1,19 @@
 -- Test for linebreak and list option (non-utf8)
 
-local helpers = require('test.functional.helpers')(after_each)
-local feed, insert, source = helpers.feed, helpers.insert, helpers.source
-local clear, feed_command, expect = helpers.clear, helpers.feed_command, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+local Screen = require('test.functional.ui.screen')
+
+local describe, it, before_each = t.describe, t.it, t.before_each
+local feed, insert, source = n.feed, n.insert, n.source
+local clear, command, feed_command, expect = n.clear, n.command, n.feed_command, n.expect
 
 describe('listlbr', function()
-  setup(clear)
+  before_each(clear)
 
+  -- luacheck: ignore 621 (Indentation)
+  -- luacheck: ignore 611 (Line contains only whitespaces)
+  -- luacheck: ignore 613 (Trailing whitespaces in a string)
   it('is working', function()
     insert([[
       dummy text]])
@@ -20,20 +27,20 @@ describe('listlbr', function()
     feed_command('set ts=4 sw=4 sts=4 linebreak sbr=+ wrap')
     source([[
       fu! ScreenChar(width)
-      	let c=''
-      	for j in range(1,4)
-	  for i in range(1,a:width)
-	    let c.=nr2char(screenchar(j, i))
-	  endfor
-	  let c.="\n"
-      	endfor
-      	return c
+        let c=''
+        for j in range(1,4)
+          for i in range(1,a:width)
+            let c.=nr2char(screenchar(j, i))
+          endfor
+          let c.="\n"
+        endfor
+        return c
       endfu
       fu! DoRecordScreen()
-      	wincmd l
-      	$put =printf(\"\n%s\", g:test)
-      	$put =g:line
-      	wincmd p
+        wincmd l
+        $put =printf(\"\n%s\", g:test)
+        $put =g:line
+        wincmd p
       endfu
     ]])
     feed_command('let g:test="Test 1: set linebreak"')
@@ -53,7 +60,9 @@ describe('listlbr', function()
     feed_command('let line=ScreenChar(winwidth(0))')
     feed_command('call DoRecordScreen()')
 
-    feed_command('let g:test ="Test 4: set linebreak with tab and 1 line as long as screen: should break!"')
+    feed_command(
+      'let g:test ="Test 4: set linebreak with tab and 1 line as long as screen: should break!"'
+    )
     feed_command('set nolist linebreak ts=8')
     feed_command([[let line="1\t".repeat('a', winwidth(0)-2)]])
     feed_command('$put =line')
@@ -67,7 +76,9 @@ describe('listlbr', function()
     feed_command('$')
     feed_command('norm! zt')
 
-    feed_command('let g:test ="Test 5: set linebreak with conceal and set list and tab displayed by different char (line may not be truncated)"')
+    feed_command(
+      'let g:test ="Test 5: set linebreak with conceal and set list and tab displayed by different char (line may not be truncated)"'
+    )
     feed_command('set cpo&vim list linebreak conceallevel=2 concealcursor=nv listchars=tab:ab')
     feed_command('syn match ConcealVar contained /_/ conceal')
     feed_command('syn match All /.*/ contains=ConcealVar')
@@ -174,8 +185,8 @@ describe('listlbr', function()
       1111-2222-1111-11-1111-2222-1111
       Test 9: using redo after block visual mode
 
-      AaA
-      AaA
+      AAA
+      AAA
       A
       Test 10: using normal commands after block-visual
 
@@ -191,5 +202,167 @@ describe('listlbr', function()
       aaaaaaaaaaaaaaaaaaaa
       aa>-----a-$         
       ~                   ]])
+  end)
+
+  -- oldtest: Test_linebreak_reset_restore()
+  it('cursor position is drawn correctly after operator', function()
+    local screen = Screen.new(60, 6)
+
+    -- f_wincol() calls validate_cursor()
+    source([[
+      set linebreak showcmd noshowmode formatexpr=wincol()-wincol()
+      call setline(1, repeat('a', &columns - 10) .. ' bbbbbbbbbb c')
+    ]])
+
+    feed('$v$')
+    screen:expect([[
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa          |
+      bbbbbbbbbb {17:c}^                                                |
+      {1:~                                                           }|*3
+                                                       2          |
+    ]])
+    feed('zo')
+    screen:expect([[
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa          |
+      bbbbbbbbbb ^c                                                |
+      {1:~                                                           }|*3
+      {9:E490: No fold found}                                         |
+    ]])
+
+    feed('$v$')
+    screen:expect([[
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa          |
+      bbbbbbbbbb {17:c}^                                                |
+      {1:~                                                           }|*3
+      {9:E490: No fold found}                              2          |
+    ]])
+    feed('gq')
+    screen:expect([[
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa          |
+      bbbbbbbbbb ^c                                                |
+      {1:~                                                           }|*3
+      {9:E490: No fold found}                                         |
+    ]])
+
+    feed('$<C-V>$')
+    screen:expect([[
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa          |
+      bbbbbbbbbb {17:c}^                                                |
+      {1:~                                                           }|*3
+      {9:E490: No fold found}                              1x2        |
+    ]])
+    feed('I')
+    screen:expect([[
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa          |
+      bbbbbbbbbb ^c                                                |
+      {1:~                                                           }|*3
+      {9:E490: No fold found}                                         |
+    ]])
+
+    feed('<Esc>$v$')
+    screen:expect([[
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa          |
+      bbbbbbbbbb {17:c}^                                                |
+      {1:~                                                           }|*3
+      {9:E490: No fold found}                              2          |
+    ]])
+    feed('s')
+    screen:expect([[
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa          |
+      bbbbbbbbbb ^                                                 |
+      {1:~                                                           }|*3
+      {9:E490: No fold found}                                         |
+    ]])
+  end)
+
+  it('does not bleed match/extmark highlight into the filler before a wrapped word', function()
+    local screen = Screen.new(60, 3)
+    screen:add_extra_attr_ids({ [100] = { underline = true } })
+    source([[
+      set wrap linebreak
+      call setline(1, '[license-commit]: https://github.com/neovim/neovim/commit/b17d9691a24099c9210289f16afb1a498a89d803')
+      highlight TestUL gui=underline cterm=underline
+    ]])
+
+    -- Highlight extends past the break point: must not bleed into the filler before the
+    -- pushed-down word, whether applied via matchadd() (search_attr) or an extmark (decor_attr).
+    local expected = [[
+      ^[license-commit]: {100:https://github.com/neovim/neovim/commit/}  |
+      {100:b17d9691a24099c9210289f16afb1a498a89d803}                    |
+                                                                  |
+    ]]
+
+    command([[call matchadd('TestUL', 'https://.*$')]])
+    screen:expect(expected)
+
+    -- Confirm the highlight actually toggles off before re-checking via the extmark path below,
+    -- so the second `expect(expected)` proves that path redraws correctly instead of coasting on
+    -- leftover state from matchadd().
+    command('call clearmatches()')
+    screen:expect([[
+      ^[license-commit]: https://github.com/neovim/neovim/commit/  |
+      b17d9691a24099c9210289f16afb1a498a89d803                    |
+                                                                  |
+    ]])
+
+    command([[call nvim_buf_add_highlight(0, -1, 'TestUL', 0, 18, -1)]])
+    screen:expect(expected)
+  end)
+
+  it('extends a to-end-of-line syntax highlight through the filler', function()
+    local screen = Screen.new(30, 5)
+    screen:add_extra_attr_ids({ [100] = { reverse = true } })
+    source([[
+      set wrap linebreak
+      call setline(1, 'section.heading:' . repeat(' ', 40) . 'END')
+      syntax match TestBar /^.*$/
+      highlight TestBar gui=reverse cterm=reverse
+    ]])
+
+    -- Unlike the tests above: the filler here is real trailing padding covered by the same 'to end
+    -- of line' match, so it must keep the highlight instead of going blank.
+    screen:expect([[
+      {100:^section.                      }|
+      {100:heading:                      }|
+      {100:                  END}         |
+      {1:~                             }|
+                                    |
+    ]])
+  end)
+
+  it('extends a background highlight into the filler only with hl_eol', function()
+    local screen = Screen.new(20, 5)
+    screen:add_extra_attr_ids({ [100] = { background = Screen.colors.Red } })
+    source([[
+      set wrap linebreak
+      call setline(1, 'word1.word2verylongwordthatpushesdown')
+      highlight TestBg guibg=Red ctermbg=Red
+      let g:ns = nvim_create_namespace('')
+    ]])
+
+    -- 'hl_eol' covers cells with no text behind them, so the filler is covered too.
+    command(
+      'call nvim_buf_set_extmark(0, g:ns, 0, 0, '
+        .. "{'end_row': 1, 'hl_group': 'TestBg', 'hl_eol': v:true})"
+    )
+    screen:expect([[
+      {100:^word1.              }|
+      {100:word2verylongwordtha}|
+      {100:tpushesdown         }|
+      {1:~                   }|
+                          |
+    ]])
+
+    -- Without it the highlight decorates characters, so it stops where they do, just as an
+    -- underline already does (see tests above).
+    command('call nvim_buf_clear_namespace(0, -1, 0, -1)')
+    command([[call nvim_buf_add_highlight(0, -1, 'TestBg', 0, 0, -1)]])
+    screen:expect([[
+      {100:^word1.}              |
+      {100:word2verylongwordtha}|
+      {100:tpushesdown}         |
+      {1:~                   }|
+                          |
+    ]])
   end)
 end)

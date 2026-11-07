@@ -1,82 +1,69 @@
-#ifndef NVIM_MESSAGE_H
-#define NVIM_MESSAGE_H
+#pragma once
 
+#include <errno.h>
 #include <stdbool.h>
-#include <stdarg.h>
-#include <stddef.h>
+#include <stddef.h>  // IWYU pragma: keep
 
-#include "nvim/types.h"
+#include "nvim/ex_cmds_defs.h"  // IWYU pragma: keep
+#include "nvim/grid_defs.h"
+#include "nvim/keycodes_defs.h"  // IWYU pragma: keep
+#include "nvim/macros_defs.h"
+#include "nvim/message_defs.h"  // IWYU pragma: keep
+#include "nvim/option_defs.h"  // IWYU pragma: keep
 
-/*
- * Types of dialogs passed to do_dialog().
- */
-#define VIM_GENERIC     0
-#define VIM_ERROR       1
-#define VIM_WARNING     2
-#define VIM_INFO        3
-#define VIM_QUESTION    4
-#define VIM_LAST_TYPE   4       /* sentinel value */
+/// Types of dialogs passed to do_dialog().
+enum {
+  VIM_GENERIC   = 0,
+  VIM_ERROR     = 1,
+  VIM_WARNING   = 2,
+  VIM_INFO      = 3,
+  VIM_QUESTION  = 4,
+  VIM_LAST_TYPE = 4,  ///< sentinel value
+};
 
-/*
- * Return values for functions like vim_dialogyesno()
- */
-#define VIM_YES         2
-#define VIM_NO          3
-#define VIM_CANCEL      4
-#define VIM_ALL         5
-#define VIM_DISCARDALL  6
+/// Return values for functions like vim_dialogyesno()
+enum {
+  VIM_YES        = 2,
+  VIM_NO         = 3,
+  VIM_CANCEL     = 4,
+  VIM_ALL        = 5,
+  VIM_DISCARDALL = 6,
+};
 
-/// Show plain message
-#define MSG(s)                      msg((char_u *)(s))
+extern MessageHistoryEntry *msg_hist_last;
 
-/// Show message highlighted according to the attr
-#define MSG_ATTR(s, attr)           msg_attr((const char *)(s), (attr))
+EXTERN bool msg_ext_need_clear INIT( = false);
+/// Set to true to force grouping a set of message chunks into a single `cmdline_show` event.
+EXTERN bool msg_ext_skip_flush INIT( = false);
+/// Set to true when previous message should be overwritten.
+EXTERN bool msg_ext_overwrite INIT( = false);
+/// Set to true to avoid setting "verbose" kind for "last set" messages.
+EXTERN bool msg_ext_skip_verbose INIT( = false);
+/// Set to false for non-internal messages to determine UI callback |api-fast| context.
+EXTERN bool msg_ext_fast INIT( = true);
 
-/// Display error message
-///
-/// Sets error flag in process, can be transformed into an exception.
-#define EMSG(s)                     emsg((char_u *)(s))
+/// allocated grid for messages. Used unless ext_messages is active.
+/// See also the description at msg_scroll_flush()
+EXTERN ScreenGrid msg_grid INIT( = SCREEN_GRID_INIT);
+EXTERN int msg_grid_pos INIT( = 0);
 
-/// Like #EMSG, but for messages with one "%s" inside
-#define EMSG2(s, p)                 emsgf((const char *) (s), (p))
+/// "adjusted" message grid. This grid accepts positions relative to
+/// default_grid. Internally it will be translated to a position on msg_grid
+/// relative to the start of the message area, or directly mapped to default_grid
+/// for legacy (display-=msgsep) message scroll behavior.
+/// TODO(bfredl): refactor "internal" message logic, msg_row etc
+/// to use the correct positions already.
+EXTERN GridView msg_grid_adj INIT( = { 0 });
 
-/// Like #EMSG, but for messages with two "%s" inside
-#define EMSG3(s, p, q)              emsgf((const char *) (s), (p), (q))
+/// value of msg_scrolled at latest msg_scroll_flush.
+EXTERN int msg_scrolled_at_flush INIT( = 0);
 
-/// Like #EMSG, but for messages with one "%" PRId64 inside
-#define EMSGN(s, n)                 emsgf((const char *) (s), (int64_t)(n))
+EXTERN int msg_grid_scroll_discount INIT( = 0);
 
-/// Like #EMSG, but for messages with one "%" PRIu64 inside
-#define EMSGU(s, n)                 emsgf((const char *) (s), (uint64_t)(n))
+EXTERN int msg_listdo_overwrite INIT( = 0);
 
-/// Display message at the recorded position
-#define MSG_PUTS(s)                 msg_puts((const char *)(s))
+#include "message.h.generated.h"
 
-/// Display message at the recorded position, highlighted
-#define MSG_PUTS_ATTR(s, a)         msg_puts_attr((const char *)(s), (a))
-
-/// Like #MSG_PUTS, but highlight like title
-#define MSG_PUTS_TITLE(s)           msg_puts_title((const char *)(s))
-
-/// Like #MSG_PUTS, but if middle part of too long messages it will be replaced
-#define MSG_PUTS_LONG(s)            msg_puts_long_attr((char_u *)(s), 0)
-
-/// Like #MSG_PUTS_ATTR, but if middle part of long messages will be replaced
-#define MSG_PUTS_LONG_ATTR(s, a)    msg_puts_long_attr((char_u *)(s), (a))
-
-/// Message history for `:messages`
-typedef struct msg_hist {
-  struct msg_hist *next;  ///< Next message.
-  char_u *msg;            ///< Message text.
-  int attr;               ///< Message highlighting.
-} MessageHistoryEntry;
-
-/// First message
-extern MessageHistoryEntry *first_msg_hist;
-/// Last message
-extern MessageHistoryEntry *last_msg_hist;
-
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "message.h.generated.h"
-#endif
-#endif  // NVIM_MESSAGE_H
+// Prefer using semsg(), because perror() may send the output to the wrong
+// destination and mess up the screen.
+#define PERROR(msg) (void)semsg("%s: %s", (msg), strerror(errno))

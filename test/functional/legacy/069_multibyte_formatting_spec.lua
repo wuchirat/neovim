@@ -3,10 +3,12 @@
 -- And test "ra" on multibyte characters.
 -- Also test byteidx() and byteidxcomp()
 
-local helpers = require('test.functional.helpers')(after_each)
-local feed, insert, eq, eval, clear, feed_command, expect = helpers.feed,
-  helpers.insert, helpers.eq, helpers.eval, helpers.clear, helpers.feed_command,
-  helpers.expect
+local t = require('test.testutil')
+local n = require('test.functional.testnvim')()
+
+local describe, it, before_each = t.describe, t.it, t.before_each
+local feed, insert, eq, eval, clear, feed_command, expect =
+  n.feed, n.insert, t.eq, n.eval, n.clear, n.feed_command, n.expect
 
 describe('multibyte text', function()
   before_each(clear)
@@ -27,7 +29,7 @@ describe('multibyte text', function()
       ＸＹＺ
       abc
       ＸＹＺ
-      
+
       ＸＹＺ
       abc
       ＸＹＺ
@@ -62,7 +64,7 @@ describe('multibyte text', function()
       Ｙ
       Ｘ
       Ｙ
-      
+
       Ｘ
       Ｘ
       a
@@ -125,7 +127,7 @@ describe('multibyte text', function()
       ab
       Ｘ
       Ｙ
-      
+
       Ｘ
       Ｘ
       a
@@ -166,7 +168,7 @@ describe('multibyte text', function()
         Ｘ
         Ｘ
         a
-      
+
         Ｘ
         Ｘ
         a
@@ -182,15 +184,14 @@ describe('multibyte text', function()
     feed_command('/^{/+1')
     feed_command('set noai tw=2 fo=tm')
     feed('gqgqjgqgqo<cr>')
-    -- Literal spaces will be trimmed from the by feed().
-    feed('<space><space>Ｘ<cr>')
-    feed('<space><space>Ｘa<esc>')
+    feed('  Ｘ<cr>')
+    feed('  Ｘa<esc>')
     expect([[
       {
         Ｘ
         Ｘ
       a
-      
+
         Ｘ
         Ｘ
       a
@@ -239,7 +240,7 @@ describe('multibyte text', function()
       ＸＸ
       ＸＸa
       ＸＸＹ
-      
+
       Ｘ
       Ｘa
       Ｘa
@@ -259,7 +260,7 @@ describe('multibyte text', function()
   it('formatting in replace mode', function()
     insert([[
       {
-      
+
       }]])
     feed_command('/^{/+1')
     feed_command('set tw=2 fo=tm')

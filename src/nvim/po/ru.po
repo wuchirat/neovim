@@ -17,6 +17,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: ../api/private/helpers.c:201
 #, fuzzy
@@ -380,8 +382,8 @@ msgid " Omni completion (^O^N^P)"
 msgstr " Omni-дополнение (^O^N^P)"
 
 #: ../edit.c:96
-msgid " Spelling suggestion (s^N^P)"
-msgstr " Предложение исправления правописания (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " Предложение исправления правописания (^S^N^P)"
 
 #: ../edit.c:97
 msgid " Keyword Local completion (^N^P)"
@@ -767,8 +769,11 @@ msgstr "параметра filter()"
 
 #: ../eval.c:9229
 #, c-format
-msgid "+-%s%3ld lines: "
-msgstr "+-%s%3ld строк: "
+msgid "+-%s%3ld line: "
+msgid_plural "+-%s%3ld lines: "
+msgstr[0] "+-%s%3ld строка: "
+msgstr[1] "+-%s%3ld строки: "
+msgstr[2] "+-%s%3ld строк: "
 
 #: ../eval.c:9291
 #, c-format
@@ -959,7 +964,6 @@ msgstr "E129: Требуется имя функции"
 #, c-format
 msgid "E128: Function name must start with a capital or \"s:\": %s"
 msgstr "E128: Имя функции должно начинаться с заглавной буквы или \"s:\": %s"
-"двоеточие: %s"
 
 #: ../eval.c:17833
 #, c-format
@@ -1205,18 +1209,14 @@ msgstr "E143: Автокоманды неожиданно убили новый 
 msgid "E144: non-numeric argument to :z"
 msgstr "E144: Параметр команды :z должен быть числом"
 
-#: ../ex_cmds.c:3404
-msgid "E145: Shell commands not allowed in rvim"
-msgstr "E145: Использование команд оболочки не допускается в rvim."
-
 #: ../ex_cmds.c:3498
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: Регулярные выражения не могут разделяться буквами"
 
 #: ../ex_cmds.c:3964
 #, c-format
-msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
-msgstr "заменить на %s? (y/n/a/q/l/^E/^Y)"
+msgid "replace with %s? (y)es/(n)o/(a)ll/(q)uit/(l)ast/scroll up(^E)/down(^Y)"
+msgstr "заменить на %s? (y)es/(n)o/(a)ll/(q)uit/(l)ast/scroll up(^E)/down(^Y)"
 
 #: ../ex_cmds.c:4379
 msgid "(Interrupted) "
@@ -1283,18 +1283,18 @@ msgstr "E478: Спокойствие, только спокойствие!"
 
 #: ../ex_cmds.c:4717
 #, c-format
-msgid "E661: Sorry, no '%s' help for %s"
-msgstr "E661: К сожалению, справка '%s' для %s отсутствует"
+msgid "E661: No '%s' help for %s"
+msgstr "E661: Справка '%s' для %s отсутствует"
 
 #: ../ex_cmds.c:4719
 #, c-format
-msgid "E149: Sorry, no help for %s"
-msgstr "E149: К сожалению справка для %s отсутствует"
+msgid "E149: No help for %s"
+msgstr "E149: Справка для %s отсутствует"
 
 #: ../ex_cmds.c:4751
 #, c-format
-msgid "Sorry, help file \"%s\" not found"
-msgstr "Извините, файл справки \"%s\" не найден"
+msgid "Help file \"%s\" not found"
+msgstr "Файл справки \"%s\" не найден"
 
 #: ../ex_cmds.c:5323
 #, c-format
@@ -1582,7 +1582,7 @@ msgstr "E494: Используйте w или w>>"
 
 #: ../ex_docmd.c:3454
 msgid "E319: The command is not available in this version"
-msgstr "E319: Извините, эта команда недоступна в данной версии"
+msgstr "E319: Эта команда недоступна в данной версии"
 
 #: ../ex_docmd.c:3752
 msgid "E172: Only one file name allowed"
@@ -2059,7 +2059,7 @@ msgstr "E201: Автокоманды *ReadPre не должны изменять
 
 #: ../fileio.c:672
 msgid "Nvim: Reading from stdin...\n"
-msgstr "Vim: Чтение из стандартного потока ввода stdin...\n"
+msgstr "Nvim: Чтение из стандартного потока ввода stdin...\n"
 
 #. Re-opening the original file failed!
 #: ../fileio.c:909
@@ -2431,7 +2431,7 @@ msgstr "--Удалено--"
 #: ../fileio.c:5732
 #, c-format
 msgid "auto-removing autocommand: %s <buffer=%d>"
-msgstr "авто-удаление автокоманды: %s <буффер=%d>"
+msgstr "авто-удаление автокоманды: %s <буфер=%d>"
 
 #. the group doesn't exist
 #: ../fileio.c:5772
@@ -2458,7 +2458,7 @@ msgstr "E216: Несуществующая группа или событие: %
 #: ../fileio.c:6090
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Автокоманды ---"
@@ -2482,7 +2482,7 @@ msgstr "E218: слишком глубоко вложенные автокома�
 
 #: ../fileio.c:7143
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s Автокоманды для \"%s\""
 
 #: ../fileio.c:7149
@@ -2586,11 +2586,6 @@ msgstr "E471: Требуется указать параметр"
 msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: После \\ должен идти символ /, ? или &"
 
-#: ../globals.h:1000
-msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
-msgstr ""
-"E11: Недопустимо в окне командной строки; <CR> выполнение, CTRL-C выход"
-
 #: ../globals.h:1002
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
@@ -2670,11 +2665,11 @@ msgstr "E17: \"%s\" является каталогом"
 #: ../globals.h:1020
 #, fuzzy
 msgid "E900: Invalid job id"
-msgstr "E49: Недопустимый размер прокрутки"
+msgstr "E900: Недопустимый идентификатор задания"
 
 #: ../globals.h:1021
 msgid "E901: Job table is full"
-msgstr ""
+msgstr "E901: Таблица заданий переполнена"
 
 #: ../globals.h:1024
 #, c-format
@@ -2711,9 +2706,7 @@ msgstr "E477: ! не допускается"
 
 #: ../globals.h:1035
 msgid "E25: Nvim does not have a built-in GUI"
-msgstr ""
-"E25: Возможность использования графического интерфейса выключена при "
-"компиляции"
+msgstr "E25: У Nvim нет встроенного графического интерфейса"
 
 #: ../globals.h:1036
 #, c-format
@@ -2981,126 +2974,6 @@ msgstr "Поиск будет продолжен с КОНЦА документ�
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "Поиск будет продолжен с НАЧАЛА документа"
 
-#: ../hardcopy.c:240
-msgid "E550: Missing colon"
-msgstr "E550: Пропущено двоеточие"
-
-#: ../hardcopy.c:252
-msgid "E551: Illegal component"
-msgstr "E551: Недопустимый компонент"
-
-#: ../hardcopy.c:259
-msgid "E552: digit expected"
-msgstr "E552: Требуется указать цифру"
-
-#: ../hardcopy.c:473
-#, c-format
-msgid "Page %d"
-msgstr "Страница %d"
-
-#: ../hardcopy.c:597
-msgid "No text to be printed"
-msgstr "Печатать нечего"
-
-#: ../hardcopy.c:668
-#, c-format
-msgid "Printing page %d (%d%%)"
-msgstr "Печать стр. %d (%d%%)"
-
-#: ../hardcopy.c:680
-#, c-format
-msgid " Copy %d of %d"
-msgstr " Копия %d из %d"
-
-#: ../hardcopy.c:733
-#, c-format
-msgid "Printed: %s"
-msgstr "Напечатано: %s"
-
-#: ../hardcopy.c:740
-msgid "Printing aborted"
-msgstr "Печать прекращена"
-
-#: ../hardcopy.c:1365
-msgid "E455: Error writing to PostScript output file"
-msgstr "E455: Ошибка записи в файл PostScript"
-
-#: ../hardcopy.c:1747
-#, c-format
-msgid "E624: Can't open file \"%s\""
-msgstr "E624: Невозможно открыть файл \"%s\""
-
-#: ../hardcopy.c:1756 ../hardcopy.c:2470
-#, c-format
-msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E457: Невозможно прочитать файл ресурсов PostScript \"%s\""
-
-#: ../hardcopy.c:1772
-#, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
-msgstr "E618: Файл \"%s\" не является файлом ресурсов PostScript"
-
-#: ../hardcopy.c:1788 ../hardcopy.c:1805 ../hardcopy.c:1844
-#, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E619: Файл \"%s\" не является допустимым файлом ресурсов PostScript"
-
-#: ../hardcopy.c:1856
-#, c-format
-msgid "E621: \"%s\" resource file has wrong version"
-msgstr "E621: Файл ресурсов \"%s\" неизвестной версии"
-
-#: ../hardcopy.c:2225
-msgid "E673: Incompatible multi-byte encoding and character set."
-msgstr "E673: Несовместимые многобайтовая кодировка и набор символов."
-
-#: ../hardcopy.c:2238
-msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
-msgstr "E674: printmbcharset не может быть пустым при многобайтовой кодировке."
-
-#: ../hardcopy.c:2254
-msgid "E675: No default font specified for multi-byte printing."
-msgstr "E675: Нет определения шрифта по умолчанию для многобайтовой печати."
-
-#: ../hardcopy.c:2426
-msgid "E324: Can't open PostScript output file"
-msgstr "E324: Невозможно открыть файл PostScript"
-
-#: ../hardcopy.c:2458
-#, c-format
-msgid "E456: Can't open file \"%s\""
-msgstr "E456: Невозможно открыть файл \"%s\""
-
-#: ../hardcopy.c:2583
-msgid "E456: Can't find PostScript resource file \"prolog.ps\""
-msgstr "E456: Файл ресурсов PostScript \"prolog.ps\" не найден"
-
-#: ../hardcopy.c:2593
-msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
-msgstr "E456: Файл ресурсов PostScript \"cidfont.ps\" не найден"
-
-#: ../hardcopy.c:2622 ../hardcopy.c:2639 ../hardcopy.c:2665
-#, c-format
-msgid "E456: Can't find PostScript resource file \"%s.ps\""
-msgstr "E456: Файл ресурсов PostScript \"%s.ps\" не найден"
-
-#: ../hardcopy.c:2654
-#, c-format
-msgid "E620: Unable to convert to print encoding \"%s\""
-msgstr "E620: Невозможно преобразовать в кодировку печать \"%s\""
-
-#: ../hardcopy.c:2877
-msgid "Sending to printer..."
-msgstr "Отправка на печать..."
-
-#: ../hardcopy.c:2881
-msgid "E365: Failed to print PostScript file"
-msgstr "E365: Не удалось выполнить печать файла PostScript"
-
-#: ../hardcopy.c:2883
-msgid "Print job sent."
-msgstr "Задание на печать отправлено."
-
 #: ../if_cscope.c:85
 msgid "Add a new database"
 msgstr "Добавить новую базу данных"
@@ -3355,10 +3228,10 @@ msgstr "E282: Невозможно выполнить чтение из \"%s\""
 #: ../main.c:2149
 msgid ""
 "\n"
-"More info with: \"vim -h\"\n"
+"More info with: \""
 msgstr ""
 "\n"
-"Дополнительная информация: \"vim -h\"\n"
+"Дополнительная информация: \""
 
 #: ../main.c:2178
 msgid "[file ..]       edit specified file(s)"
@@ -3376,14 +3249,13 @@ msgstr "-t метка    редактирование файла с указан
 #: ../main.c:2181
 msgid "-q [errorfile]  edit file with first error"
 msgstr ""
-"-q [файл-ошибок]\n"
-"\t\t\t\t    редактирование файла с первой ошибкой"
+"-q [файл-ошибок] редактирование файла с первой ошибкой"
 
 #: ../main.c:2187
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -3447,10 +3319,6 @@ msgstr "-y\t\t\tПростой режим (как \"evim\", безрежимны
 msgid "-R\t\t\tReadonly mode (like \"view\")"
 msgstr "-R\t\t\tТолько для чтения (как \"view\")"
 
-#: ../main.c:2208
-msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
-msgstr "-Z\t\t\tОграниченный режим (как \"rvim\")"
-
 #: ../main.c:2209
 msgid "-m\t\t\tModifications (writing files) not allowed"
 msgstr "-m\t\t\tБез возможности сохранения изменений (записи файлов)"
@@ -3479,8 +3347,8 @@ msgstr "-N\t\t\tРежим неполной совместимости с Vi: 'n
 #: ../main.c:2215
 msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
 msgstr ""
-"-V[N][файл]\t\tВыводить дополнительные сообщения\n"
-"\t\t\t\t[уровень N] [записывать в файл]"
+"-V[N][файл]\t\tВыводить дополнительные сообщения "
+"[уровень N] [записывать в файл]"
 
 #: ../main.c:2216
 msgid "-D\t\t\tDebugging mode"
@@ -4073,12 +3941,8 @@ msgid "E325: ATTENTION"
 msgstr "E325: ВНИМАНИЕ"
 
 #: ../memline.c:3222
-msgid ""
-"\n"
-"Found a swap file by the name \""
-msgstr ""
-"\n"
-"Обнаружен своп-файл с именем \""
+msgid "Found a swap file by the name \""
+msgstr "Обнаружен своп-файл с именем \""
 
 # С маленькой буквы, чтобы соответствовало по стилю соседним сообщениям.
 #: ../memline.c:3226
@@ -4105,7 +3969,6 @@ msgstr ""
 #: ../memline.c:3245
 msgid "  Quit, or continue with caution.\n"
 msgstr ""
-" \n"
 "    Завершите работу или продолжайте с осторожностью.\n"
 
 #: ../memline.c:3246
@@ -4113,8 +3976,8 @@ msgid "(2) An edit session for this file crashed.\n"
 msgstr "(2) Сеанс редактирования этого файла завершён аварийно.\n"
 
 #: ../memline.c:3247
-msgid "    If this is the case, use \":recover\" or \"vim -r "
-msgstr "    В этом случае, используйте команду \":recover\" или \"vim -r "
+msgid "    If this is the case, use \":recover\" or \"nvim -r "
+msgstr "    В этом случае, используйте команду \":recover\" или \"nvim -r "
 
 #: ../memline.c:3249
 msgid ""
@@ -4315,9 +4178,9 @@ msgid ""
 "&No\n"
 "&Cancel"
 msgstr ""
-"&Да\n"
-"&Нет\n"
-"О&тмена"
+"&Y Да\n"
+"&N Нет\n"
+"&C Отмена"
 
 #: ../message.c:3045
 msgid ""
@@ -4423,7 +4286,7 @@ msgstr "E663: В конце списка изменений"
 
 #: ../normal.c:7053
 msgid "Type  :quit<Enter>  to exit Nvim"
-msgstr "Введите :quit<Enter>  для выхода из Vim"
+msgstr "Введите :quit<Enter>  для выхода из Nvim"
 
 #: ../ops.c:248
 #, c-format
@@ -4531,6 +4394,7 @@ msgid ""
 "lines"
 msgstr ""
 "E883: шаблон поиска и регистр выражения не могут содержать двух или более "
+"строк"
 
 #: ../ops.c:5089
 #, c-format
@@ -4772,12 +4636,8 @@ msgstr ""
 "Невозможно запустить оболочку "
 
 #: ../os/shell.c:439
-msgid ""
-"\n"
-"shell returned "
-msgstr ""
-"\n"
-"Оболочка завершила работу "
+msgid "shell returned "
+msgstr "Оболочка завершила работу "
 
 #: ../os_unix.c:465 ../os_unix.c:471
 msgid ""
@@ -5104,7 +4964,7 @@ msgstr "E876: (рег. выражение НКА) недостаточно ме�
 
 #: ../regexp_nfa.c:4571 ../regexp_nfa.c:4869
 msgid ""
-"Could not open temporary log file for writing, displaying on stderr ... "
+"Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
 "Невозможно открыть файл временного журнала для записи, вывод на stderr..."
 
@@ -5347,8 +5207,8 @@ msgstr "Предупреждение: регион %s не поддержива�
 
 #: ../spell.c:4550
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Чтение файла аффиксов %s ..."
+msgid "Reading affix file %s..."
+msgstr "Чтение файла аффиксов %s..."
 
 #: ../spell.c:4589 ../spell.c:5635 ../spell.c:6140
 #, c-format
@@ -5511,8 +5371,8 @@ msgstr "%s имеет другое значение, чем в файле .aff"
 
 #: ../spell.c:5602
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Чтение файла словаря %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Чтение файла словаря %s..."
 
 #: ../spell.c:5611
 #, c-format
@@ -5546,8 +5406,8 @@ msgstr "Пропущено %d слов с не ASCII символами в %s"
 
 #: ../spell.c:6115
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Чтение файла слов %s ..."
+msgid "Reading word file %s..."
+msgstr "Чтение файла слов %s..."
 
 #: ../spell.c:6155
 #, c-format
@@ -5616,7 +5476,7 @@ msgstr "Общее количество слов: %d"
 
 #: ../spell.c:7655
 #, c-format
-msgid "Writing suggestion file %s ..."
+msgid "Writing suggestion file %s..."
 msgstr "Запись файла предложения исправлений правописания %s"
 
 #: ../spell.c:7707 ../spell.c:7927
@@ -5643,8 +5503,8 @@ msgstr "Предупреждение: оба составные и указан�
 
 #: ../spell.c:7920
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Запись файла правописания %s ..."
+msgid "Writing spell file %s..."
+msgstr "Запись файла правописания %s..."
 
 #: ../spell.c:7925
 msgid "Done!"
@@ -5670,13 +5530,13 @@ msgid "E763: Word characters differ between spell files"
 msgstr "E763: Символы слов отличаются в файлах правописания"
 
 #: ../spell.c:8684
-msgid "Sorry, no suggestions"
-msgstr "Извините, нет предположений"
+msgid "No suggestions"
+msgstr "Нет предположений"
 
 #: ../spell.c:8687
 #, c-format
-msgid "Sorry, only %<PRId64> suggestions"
-msgstr "Извините, только %<PRId64> предположений"
+msgid "Only %<PRId64> suggestions"
+msgstr "Только %<PRId64> предположений"
 
 #. for when 'cmdheight' > 1
 #. avoid more prompt
@@ -5984,9 +5844,9 @@ msgstr "E424: Используется слишком много разных а
 msgid "E669: Unprintable character in group name"
 msgstr "E669: Непечатный символ в имени группы"
 
-#: ../syntax.c:7434
-msgid "W18: Invalid character in group name"
-msgstr "W18: Недопустимый символ в имени группы"
+#: ../highlight_group.c:1756
+msgid "E5248: Invalid character in group name"
+msgstr "E5248: Недопустимый символ в имени группы"
 
 #: ../syntax.c:7448
 msgid "E849: Too many highlight and syntax groups"
@@ -6147,7 +6007,7 @@ msgstr "Vim: Ошибка чтения ввода, выход...\n"
 #: ../undo.c:379
 #, fuzzy
 msgid "E881: Line count changed unexpectedly"
-msgstr "E834: Неожиданно изменился счётчик строк"
+msgstr "E881: Неожиданно изменился счётчик строк"
 
 #: ../undo.c:627
 #, c-format

@@ -1,9 +1,12 @@
 -- vim: set foldmethod=marker foldmarker=[[,]] :
 -- Test for visual block shift and tab characters.
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear, feed, insert = helpers.clear, helpers.feed, helpers.insert
-local feed_command, expect = helpers.feed_command, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup = t.describe, t.it, t.setup
+local clear, feed, insert = n.clear, n.feed, n.insert
+local feed_command, expect = n.feed_command, n.expect
 
 describe('visual block shift and tab characters', function()
   setup(clear)
@@ -15,7 +18,7 @@ describe('visual block shift and tab characters', function()
       one two three
       one two three
       one two three
-      
+
       abcdefghijklmnopqrstuvwxyz
       abcdefghijklmnopqrstuvwxyz
       abcdefghijklmnopqrstuvwxyz
@@ -49,7 +52,7 @@ describe('visual block shift and tab characters', function()
       on1 two three
       on1 two three
       on1 two three
-      
+
           abcdefghijklmnopqrstuvwxyz
       abcdefghij
           abc	    defghijklmnopqrstuvwxyz

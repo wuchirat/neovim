@@ -1,12 +1,6 @@
-#ifndef NVIM_CURSOR_H
-#define NVIM_CURSOR_H
+#pragma once
 
-#include <stdbool.h>
+#include "nvim/pos_defs.h"  // IWYU pragma: keep
+#include "nvim/types_defs.h"  // IWYU pragma: keep
 
-#include "nvim/vim.h"
-
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "cursor.h.generated.h"
-#endif
-
-#endif  // NVIM_CURSOR_H
+#include "cursor.h.generated.h"

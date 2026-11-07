@@ -1,13 +1,19 @@
 -- Test for autocommand that changes the buffer list, when doing ":ball".
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear, feed, insert = helpers.clear, helpers.feed, helpers.insert
-local feed_command, expect = helpers.feed_command, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup, teardown = t.describe, t.it, t.setup, t.teardown
+local clear, feed, insert = n.clear, n.feed, n.insert
+local feed_command, expect = n.feed_command, n.expect
 
 describe(':ball', function()
   setup(clear)
 
   it('is working', function()
+    -- Must disable 'hidden' so that the BufReadPost autocmd is triggered
+    -- when Xxx2 is reloaded
+    feed_command('set nohidden')
     insert([[
       start of test file Xxx
           this is a test
@@ -18,7 +24,7 @@ describe(':ball', function()
     feed('gg')
 
     -- Write test file Xxx1
-    feed('A1:.,/end of/w! Xxx1<cr>')
+    feed('A1<esc>:.,/end of/w! Xxx1<cr>')
     feed_command('sp Xxx1')
     feed_command('close')
 
@@ -36,10 +42,10 @@ describe(':ball', function()
 
     -- Open window for all args, close Xxx2
     feed('$r4:ball<cr>')
-   
+
     -- Write contents of this file
     feed_command('%yank A')
-    
+
     -- Append contents of second window (Xxx1)
     feed('')
     feed_command('%yank A')

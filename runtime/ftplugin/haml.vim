@@ -1,7 +1,8 @@
 " Vim filetype plugin
 " Language:	Haml
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:	2016 Aug 29
+" Last Change:	2019 Dec 05
+"		2024 Jan 14 by Vim Project (browsefilter)
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -13,10 +14,14 @@ set cpo-=C
 
 " Define some defaults in case the included ftplugins don't set them.
 let s:undo_ftplugin = ""
-let s:browsefilter = "All Files (*.*)\t*.*\n"
+if has("win32")
+  let s:browsefilter = "All Files (*.*)\t*\n"
+else
+  let s:browsefilter = "All Files (*)\t*\n"
+endif
 let s:match_words = ""
 
-runtime! ftplugin/html.vim ftplugin/html_*.vim ftplugin/html/*.vim
+runtime! ftplugin/html[.]{vim,lua} ftplugin/html_*.{vim,lua} ftplugin/html/*.{vim,lua}
 unlet! b:did_ftplugin
 set matchpairs-=<:>
 
@@ -34,22 +39,24 @@ if exists("b:match_words")
   unlet b:match_words
 endif
 
-runtime! ftplugin/ruby.vim ftplugin/ruby_*.vim ftplugin/ruby/*.vim
+runtime! ftplugin/ruby[.]{vim,lua} ftplugin/ruby_*.{vim,lua} ftplugin/ruby/*.{vim,lua}
 let b:did_ftplugin = 1
+
+let &l:define .= empty(&l:define ? '' : '\|') . '^\s*\%(%\w*\)\=\%(\.[[:alnum:]_-]\+\)*#'
 
 " Combine the new set of values with those previously included.
 if exists("b:undo_ftplugin")
   let s:undo_ftplugin = b:undo_ftplugin . " | " . s:undo_ftplugin
 endif
 if exists ("b:browsefilter")
-  let s:browsefilter = substitute(b:browsefilter,'\cAll Files (\*\.\*)\t\*\.\*\n','','') . s:browsefilter
+  let s:browsefilter = substitute(b:browsefilter,'\cAll Files (.*)\t\*\n','','') . s:browsefilter
 endif
 if exists("b:match_words")
   let s:match_words = b:match_words . ',' . s:match_words
 endif
 
-" Change the browse dialog on Win32 to show mainly Haml-related files
-if has("gui_win32")
+" Change the browse dialog on Win32 and GTK to show mainly Haml-related files
+if has("gui_win32") || has("gui_gtk")
   let b:browsefilter="Haml Files (*.haml)\t*.haml\nSass Files (*.sass)\t*.sass\n" . s:browsefilter
 endif
 
@@ -60,7 +67,7 @@ endif
 
 setlocal comments= commentstring=-#\ %s
 
-let b:undo_ftplugin = "setl cms< com< "
+let b:undo_ftplugin = "setl def< cms< com< " .
       \ " | unlet! b:browsefilter b:match_words | " . s:undo_ftplugin
 
 let &cpo = s:save_cpo

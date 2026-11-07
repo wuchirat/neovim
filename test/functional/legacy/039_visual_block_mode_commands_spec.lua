@@ -1,14 +1,16 @@
 -- Test Visual block mode commands
 -- And test "U" in Visual mode, also on German sharp S.
 
-local helpers = require('test.functional.helpers')(after_each)
-local nvim, eq = helpers.meths, helpers.eq
-local insert, feed = helpers.insert, helpers.feed
-local clear, expect = helpers.clear, helpers.expect
-local feed_command = helpers.feed_command
+local t = require('test.testutil')
+local n = require('test.functional.testnvim')()
+
+local describe, it, before_each = t.describe, t.it, t.before_each
+local api, eq = n.api, t.eq
+local insert, feed = n.insert, n.feed
+local clear, expect = n.clear, n.expect
+local feed_command = n.feed_command
 
 describe('Visual block mode', function()
-
   before_each(function()
     clear()
 
@@ -43,6 +45,7 @@ describe('Visual block mode', function()
       abcdqqqqijklm]])
   end)
 
+  -- luacheck: ignore 611 (Line contains only whitespaces)
   it('should insert a block using cursor keys for movement', function()
     insert([[
       aaaaaa
@@ -104,12 +107,14 @@ describe('Visual block mode', function()
       456ab7]])
   end)
 
+  -- luacheck: ignore 621 (Indentation)
   it('should insert and append a block when virtualedit=all', function()
     insert([[
       		line1
       		line2
       		line3
-      ]])
+      .
+    ]])
 
     -- Test for Visual block insert when virtualedit=all and utf-8 encoding.
     feed_command('set ve=all')
@@ -120,7 +125,8 @@ describe('Visual block mode', function()
              x 	line1
              x 	line2
              x 	line3
-      ]])
+      .
+    ]])
 
     -- Test for Visual block append when virtualedit=all.
     feed('012l<C-v>jjAx<ESC>')
@@ -129,11 +135,12 @@ describe('Visual block mode', function()
              x     x   line1
              x     x   line2
              x     x   line3
-      ]])
+      .
+    ]])
   end)
 
   it('should make a selected part uppercase', function()
-    -- GUe must uppercase a whole word, also when ß changes to SS.
+    -- GUe must uppercase a whole word, also when ß changes to ẞ.
     feed('Gothe youtußeuu end<ESC>Ypk0wgUe<CR>')
     -- GUfx must uppercase until x, inclusive.
     feed('O- youßtußexu -<ESC>0fogUfx<CR>')
@@ -149,13 +156,13 @@ describe('Visual block mode', function()
 
     expect([[
       
-      the YOUTUSSEUU end
-      - yOUSSTUSSEXu -
-      THE YOUTUSSEUU END
-      111THE YOUTUSSEUU END
+      the YOUTUẞEUU end
+      - yOUẞTUẞEXu -
+      THE YOUTUẞEUU END
+      111THE YOUTUẞEUU END
       BLAH DI
       DOH DUT
-      222the yoUTUSSEUU END
+      222the yoUTUẞEUU END
       333THE YOUTUßeuu end]])
   end)
 
@@ -203,14 +210,14 @@ describe('Visual block mode', function()
     feed('G2l')
     feed('2k<C-v>$gj<ESC>')
     feed_command([[let cpos=getpos("'>")]])
-    local cpos = nvim.get_var('cpos')
+    local cpos = api.nvim_get_var('cpos')
     local expected = {
       col = 4,
-      off = 0
+      off = 0,
     }
     local actual = {
       col = cpos[3],
-      off = cpos[4]
+      off = cpos[4],
     }
 
     eq(expected, actual)

@@ -1,20 +1,16 @@
-// This is an open source non-commercial project. Dear PVS-Studio, please check
-// it. PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-
 #include <assert.h>
-#include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
-
+#include <stddef.h>
 #include <uv.h>
 
-#include "nvim/log.h"
-#include "nvim/event/loop.h"
+#include "nvim/event/defs.h"
+#include "nvim/event/stream.h"
 #include "nvim/event/wstream.h"
-#include "nvim/vim.h"
+#include "nvim/macros_defs.h"
 #include "nvim/memory.h"
+#include "nvim/types_defs.h"
 
-#define DEFAULT_MAXMEM 1024 * 1024 * 10
+#define DEFAULT_MAXMEM 1024 * 1024 * 2000
 
 typedef struct {
   Stream *stream;
@@ -22,9 +18,7 @@ typedef struct {
   uv_write_t uv_req;
 } WRequest;
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "event/wstream.c.generated.h"
-#endif
+#include "event/wstream.c.generated.h"
 
 void wstream_init_fd(Loop *loop, Stream *stream, int fd, size_t maxmem)
   FUNC_ATTR_NONNULL_ARG(1) FUNC_ATTR_NONNULL_ARG(2)
@@ -69,16 +63,43 @@ void wstream_set_write_cb(Stream *stream, stream_write_cb cb, void *data)
 ///
 /// @param stream The `Stream` instance
 /// @param buffer The buffer which contains data to be written
-/// @return false if the write failed
-bool wstream_write(Stream *stream, WBuffer *buffer)
+/// @return 0 on success, or libuv error code on failure
+int wstream_write(Stream *stream, WBuffer *buffer)
   FUNC_ATTR_NONNULL_ALL
 {
   assert(stream->maxmem);
   // This should not be called after a stream was freed
   assert(!stream->closed);
 
+  int err = 0;
+  uv_buf_t uvbuf;
+  uvbuf.base = buffer->data;
+  uvbuf.len = UV_BUF_LEN(buffer->size);
+
+  if (!stream->uvstream) {
+    uv_fs_t req;
+
+    // Synchronous write
+
+#ifdef __EMSCRIPTEN__
+    // Pass -1 so the write uses the current file position.
+    err = uv_fs_write(stream->uv.idle.loop, &req, stream->fd, &uvbuf, 1, -1, NULL);
+#else
+    err = uv_fs_write(stream->uv.idle.loop, &req, stream->fd, &uvbuf, 1, stream->fpos, NULL);
+#endif
+    uv_fs_req_cleanup(&req);
+
+    wstream_release_wbuffer(buffer);
+
+    assert(stream->write_cb == NULL);
+
+    stream->fpos += MAX(req.result, 0);
+    return req.result > 0 ? 0 : err != 0 ? err : UV_UNKNOWN;
+  }
+
   if (stream->curmem > stream->maxmem) {
-    goto err;
+    err = UV_ENOMEM;
+    goto fail;
   }
 
   stream->curmem += buffer->size;
@@ -88,26 +109,24 @@ bool wstream_write(Stream *stream, WBuffer *buffer)
   data->buffer = buffer;
   data->uv_req.data = data;
 
-  uv_buf_t uvbuf;
-  uvbuf.base = buffer->data;
-  uvbuf.len = buffer->size;
-
-  if (uv_write(&data->uv_req, stream->uvstream, &uvbuf, 1, write_cb)) {
+  if ((err = uv_write(&data->uv_req, stream->uvstream, &uvbuf, 1, write_cb)) != 0) {
     xfree(data);
-    goto err;
+    goto fail;
   }
 
   stream->pending_reqs++;
-  return true;
+  assert(err == 0);
+  return 0;
 
-err:
+fail:
   wstream_release_wbuffer(buffer);
-  return false;
+  assert(err != 0);
+  return err;
 }
 
 /// Creates a WBuffer object for holding output data. Instances of this
 /// object can be reused across Stream instances, and the memory is freed
-/// automatically when no longer needed(it tracks the number of references
+/// automatically when no longer needed (it tracks the number of references
 /// internally)
 ///
 /// @param data Data stored by the WBuffer
@@ -115,12 +134,9 @@ err:
 /// @param refcount The number of references for the WBuffer. This will be used
 ///        by Stream instances to decide when a WBuffer should be freed.
 /// @param cb Pointer to function that will be responsible for freeing
-///        the buffer data(passing 'free' will work as expected).
+///        the buffer data (passing `xfree` will work as expected).
 /// @return The allocated WBuffer instance
-WBuffer *wstream_new_buffer(char *data,
-                            size_t size,
-                            size_t refcount,
-                            wbuffer_data_finalizer cb)
+WBuffer *wstream_new_buffer(char *data, size_t size, size_t refcount, wbuffer_data_finalizer cb)
   FUNC_ATTR_NONNULL_ARG(1)
 {
   WBuffer *rv = xmalloc(sizeof(WBuffer));
@@ -147,7 +163,7 @@ static void write_cb(uv_write_t *req, int status)
   data->stream->pending_reqs--;
 
   if (data->stream->closed && data->stream->pending_reqs == 0) {
-    // Last pending write, free the stream;
+    // Last pending write; free the stream.
     stream_close_handle(data->stream);
   }
 

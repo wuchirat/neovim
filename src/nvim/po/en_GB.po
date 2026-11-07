@@ -386,7 +386,7 @@ msgid " Omni completion (^O^N^P)"
 msgstr ""
 
 #: ../edit.c:96
-msgid " Spelling suggestion (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
 msgstr ""
 
 #: ../edit.c:97
@@ -1194,17 +1194,13 @@ msgstr ""
 msgid "E144: non-numeric argument to :z"
 msgstr ""
 
-#: ../ex_cmds.c:3404
-msgid "E145: Shell commands not allowed in rvim"
-msgstr ""
-
 #: ../ex_cmds.c:3498
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: Regular expressions cannot be delimited by letters"
 
 #: ../ex_cmds.c:3964
-#, c-format
-msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
+#, c-format"
+msgid "replace with %s? (y)es/(n)o/(a)ll/(q)uit/(l)ast/scroll up(^E)/down(^Y)"
 msgstr ""
 
 #: ../ex_cmds.c:4379
@@ -1270,17 +1266,17 @@ msgstr ""
 
 #: ../ex_cmds.c:4717
 #, c-format
-msgid "E661: Sorry, no '%s' help for %s"
+msgid "E661: No '%s' help for %s"
 msgstr ""
 
 #: ../ex_cmds.c:4719
 #, c-format
-msgid "E149: Sorry, no help for %s"
+msgid "E149: No help for %s"
 msgstr ""
 
 #: ../ex_cmds.c:4751
 #, c-format
-msgid "Sorry, help file \"%s\" not found"
+msgid "Help file \"%s\" not found"
 msgstr ""
 
 #: ../ex_cmds.c:5323
@@ -2535,10 +2531,6 @@ msgstr ""
 msgid "E10: \\ should be followed by /, ? or &"
 msgstr ""
 
-#: ../globals.h:1000
-msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
-msgstr ""
-
 #: ../globals.h:1002
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
@@ -2927,128 +2919,6 @@ msgstr ""
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr ""
 
-#: ../hardcopy.c:240
-msgid "E550: Missing colon"
-msgstr ""
-
-#: ../hardcopy.c:252
-msgid "E551: Illegal component"
-msgstr ""
-
-#: ../hardcopy.c:259
-msgid "E552: digit expected"
-msgstr ""
-
-#: ../hardcopy.c:473
-#, c-format
-msgid "Page %d"
-msgstr ""
-
-#: ../hardcopy.c:597
-msgid "No text to be printed"
-msgstr ""
-
-#: ../hardcopy.c:668
-#, c-format
-msgid "Printing page %d (%d%%)"
-msgstr ""
-
-#: ../hardcopy.c:680
-#, c-format
-msgid " Copy %d of %d"
-msgstr ""
-
-#: ../hardcopy.c:733
-#, c-format
-msgid "Printed: %s"
-msgstr ""
-
-#: ../hardcopy.c:740
-msgid "Printing aborted"
-msgstr ""
-
-#: ../hardcopy.c:1365
-#, fuzzy
-msgid "E455: Error writing to PostScript output file"
-msgstr "E324: Cannot open PostScript output file"
-
-#: ../hardcopy.c:1747
-#, c-format
-msgid "E624: Can't open file \"%s\""
-msgstr "E624: Cannot open file \"%s\""
-
-#: ../hardcopy.c:1756 ../hardcopy.c:2470
-#, c-format
-msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E457: Cannot read PostScript resource file \"%s\""
-
-#: ../hardcopy.c:1772
-#, fuzzy, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
-msgstr "E457: Cannot read PostScript resource file \"%s\""
-
-#: ../hardcopy.c:1788 ../hardcopy.c:1805 ../hardcopy.c:1844
-#, fuzzy, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E457: Cannot read PostScript resource file \"%s\""
-
-#: ../hardcopy.c:1856
-#, c-format
-msgid "E621: \"%s\" resource file has wrong version"
-msgstr ""
-
-#: ../hardcopy.c:2225
-msgid "E673: Incompatible multi-byte encoding and character set."
-msgstr ""
-
-#: ../hardcopy.c:2238
-msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
-msgstr ""
-
-#: ../hardcopy.c:2254
-msgid "E675: No default font specified for multi-byte printing."
-msgstr ""
-
-#: ../hardcopy.c:2426
-msgid "E324: Can't open PostScript output file"
-msgstr "E324: Cannot open PostScript output file"
-
-#: ../hardcopy.c:2458
-#, c-format
-msgid "E456: Can't open file \"%s\""
-msgstr "E456: Cannot open file \"%s\""
-
-#: ../hardcopy.c:2583
-msgid "E456: Can't find PostScript resource file \"prolog.ps\""
-msgstr "E456: Cannot find PostScript resource file \"prolog.ps\""
-
-#: ../hardcopy.c:2593
-msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
-msgstr "E456: Cannot find PostScript resource file \"cidfont.ps\""
-
-#: ../hardcopy.c:2622 ../hardcopy.c:2639 ../hardcopy.c:2665
-#, c-format
-msgid "E456: Can't find PostScript resource file \"%s.ps\""
-msgstr "E456: Cannot find PostScript resource file \"%s.ps\""
-
-#: ../hardcopy.c:2654
-#, c-format
-msgid "E620: Unable to convert to print encoding \"%s\""
-msgstr ""
-
-#: ../hardcopy.c:2877
-msgid "Sending to printer..."
-msgstr ""
-
-#: ../hardcopy.c:2881
-#, fuzzy
-msgid "E365: Failed to print PostScript file"
-msgstr "E324: Cannot open PostScript output file"
-
-#: ../hardcopy.c:2883
-msgid "Print job sent."
-msgstr ""
-
 #: ../if_cscope.c:85
 msgid "Add a new database"
 msgstr ""
@@ -3370,10 +3240,6 @@ msgstr ""
 
 #: ../main.c:2207
 msgid "-R\t\t\tReadonly mode (like \"view\")"
-msgstr ""
-
-#: ../main.c:2208
-msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
 msgstr ""
 
 #: ../main.c:2209
@@ -3947,9 +3813,7 @@ msgid "E325: ATTENTION"
 msgstr ""
 
 #: ../memline.c:3222
-msgid ""
-"\n"
-"Found a swap file by the name \""
+msgid "Found a swap file by the name \""
 msgstr ""
 
 #: ../memline.c:3226
@@ -3977,7 +3841,7 @@ msgid "(2) An edit session for this file crashed.\n"
 msgstr ""
 
 #: ../memline.c:3247
-msgid "    If this is the case, use \":recover\" or \"vim -r "
+msgid "    If this is the case, use \":recover\" or \"nvim -r "
 msgstr ""
 
 #: ../memline.c:3249
@@ -4577,9 +4441,7 @@ msgid ""
 msgstr ""
 
 #: ../os/shell.c:439
-msgid ""
-"\n"
-"shell returned "
+msgid "shell returned "
 msgstr ""
 
 #: ../os_unix.c:465 ../os_unix.c:471
@@ -5432,12 +5294,12 @@ msgid "E763: Word characters differ between spell files"
 msgstr ""
 
 #: ../spell.c:8684
-msgid "Sorry, no suggestions"
+msgid "No suggestions"
 msgstr ""
 
 #: ../spell.c:8687
 #, c-format
-msgid "Sorry, only %<PRId64> suggestions"
+msgid "Only %<PRId64> suggestions"
 msgstr ""
 
 #. for when 'cmdheight' > 1
@@ -5738,8 +5600,8 @@ msgstr ""
 msgid "E669: Unprintable character in group name"
 msgstr ""
 
-#: ../syntax.c:7434
-msgid "W18: Invalid character in group name"
+#: ../highlight_group.c:1756
+msgid "E5248: Invalid character in group name"
 msgstr ""
 
 #: ../syntax.c:7448

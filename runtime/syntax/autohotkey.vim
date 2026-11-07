@@ -2,7 +2,9 @@
 " Language:         AutoHotkey script file
 " Maintainer:       Michael Wong
 "                   https://github.com/mmikeww/autohotkey.vim
-" Latest Revision:  2017-01-23
+" Latest Revision:  2022-07-25
+" Last Change:
+" 2026 Apr 20 by Vim project: remove wrong oneline keyword #20018
 " Previous Maintainers:       SungHyun Nam <goweol@gmail.com>
 "                             Nikolai Weibull <now@bitwi.se>
 
@@ -31,11 +33,10 @@ syn region autohotkeyString
       \ matchgroup=autohotkeyStringDelimiter
       \ start=+"+
       \ end=+"+
-      \ contains=autohotkeyEscape
+      \ contains=autohotkeyEscape,autohotkeyMatchClass
 
 syn match autohotkeyVariable
       \ display
-      \ oneline
       \ contains=autohotkeyBuiltinVariable
       \ keepend
       \ '%\S\{-}%'
@@ -49,9 +50,9 @@ syn keyword autohotkeyBuiltinVariable
       \ A_Sec A_MSec A_Now A_NowUTC A_TickCount
       \ A_IsSuspended A_IsPaused A_IsCritical A_BatchLines A_TitleMatchMode A_TitleMatchModeSpeed
       \ A_DetectHiddenWindows A_DetectHiddenText A_AutoTrim A_StringCaseSense
-      \ A_FileEncoding A_FormatInteger A_FormatFloat A_KeyDelay A_WinDelay A_ControlDelay
-      \ A_SendMode A_SendLevel A_StoreCapsLockMode A_KeyDelay A_KeyDelayDuration
-      \ A_KeyDelayPlay A_KeyDelayPlayDuration A_MouseDelayPlay
+      \ A_FileEncoding A_FormatInteger A_FormatFloat A_WinDelay A_ControlDelay
+      \ A_SendMode A_SendLevel A_StoreCapsLockMode A_KeyDelay A_KeyDuration
+      \ A_KeyDelayPlay A_KeyDurationPlay A_MouseDelayPlay
       \ A_MouseDelay A_DefaultMouseSpeed A_RegView A_IconHidden A_IconTip A_IconFile
       \ A_CoordModeToolTip A_CoordModePixel A_CoordModeMouse A_CoordModeCaret A_CoordModeMenu
       \ A_IconNumber
@@ -73,6 +74,7 @@ syn keyword autohotkeyBuiltinVariable
       \ A_LoopFileShortName A_LoopFileDir A_LoopFileTimeModified A_LoopFileTimeCreated
       \ A_LoopFileTimeAccessed A_LoopFileAttrib A_LoopFileSize A_LoopFileSizeKB A_LoopFileSizeMB
       \ A_LoopRegType A_LoopRegKey A_LoopRegSubKey A_LoopRegTimeModified
+      \ A_TimeIdleKeyboard A_TimeIdleMouse A_ListLines A_ComSpec A_LoopFilePath A_Args
 
 syn match   autohotkeyBuiltinVariable
       \ contained
@@ -106,6 +108,7 @@ syn keyword autohotkeyCommand
       \ FormatTime IfInString IfNotInString Sort StringCaseSense StringGetPos
       \ StringLeft StringRight StringLower StringUpper StringMid StringReplace
       \ StringSplit StringTrimLeft StringTrimRight StringLen
+      \ StrSplit StrReplace Throw
       \ Control ControlClick ControlFocus ControlGet ControlGetFocus
       \ ControlGetPos ControlGetText ControlMove ControlSend ControlSendRaw
       \ ControlSetText Menu PostMessage SendMessage SetControlDelay
@@ -117,19 +120,21 @@ syn keyword autohotkeyCommand
       \ WinMinimizeAll WinMinimizeAllUndo WinMove WinRestore WinSet
       \ WinSetTitle WinShow WinWait WinWaitActive WinWaitNotActive WinWaitClose
       \ SetCapsLockState SetNumLockState SetScrollLockState
+      \ Hotstring LoadPicture MenuGetHandle MenuGetName OnError OnClipboardChange
 
 syn keyword autohotkeyFunction
-      \ InStr RegExMatch RegExReplace StrLen SubStr Asc Chr
-      \ DllCall VarSetCapacity WinActive WinExist IsLabel OnMessage 
+      \ InStr RegExMatch RegExReplace StrLen SubStr Asc Chr Func
+      \ DllCall VarSetCapacity WinActive WinExist IsLabel OnMessage
       \ Abs Ceil Exp Floor Log Ln Mod Round Sqrt Sin Cos Tan ASin ACos ATan
       \ FileExist GetKeyState NumGet NumPut StrGet StrPut RegisterCallback
       \ IsFunc Trim LTrim RTrim IsObject Object Array FileOpen
       \ ComObjActive ComObjArray ComObjConnect ComObjCreate ComObjGet
       \ ComObjError ComObjFlags ComObjQuery ComObjType ComObjValue ComObject
+      \ Format Exception Ord InputHook
 
 syn keyword autohotkeyStatement
       \ Break Continue Exit ExitApp Gosub Goto OnExit Pause Return
-      \ Suspend Reload
+      \ Suspend Reload new class extends
 
 syn keyword autohotkeyRepeat
       \ Loop
@@ -138,7 +143,8 @@ syn keyword autohotkeyConditional
       \ IfExist IfNotExist If IfEqual IfLess IfGreater Else
       \ IfWinExist IfWinNotExist IfWinActive IfWinNotActive
       \ IfNotEqual IfLessOrEqual IfGreaterOrEqual
-      \ while until for in
+      \ while until for in try catch finally not
+      \ switch case default
 
 syn match   autohotkeyPreProcStart
       \ nextgroup=
@@ -178,7 +184,7 @@ syn keyword autohotkeyPreProc
       \ Warn
 
 syn keyword autohotkeyMatchClass
-      \ ahk_group ahk_class ahk_id ahk_pid
+      \ ahk_group ahk_class ahk_id ahk_pid ahk_exe
 
 syn match   autohotkeyNumbers
       \ display
@@ -217,7 +223,7 @@ syn match   autohotkeyHotkey
       \ contains=autohotkeyKey,
       \   autohotkeyHotkeyDelimiter
       \ display
-      \ '^.\{-}::'
+      \ '^\s*\S*\%( Up\)\?::'
 
 syn match   autohotkeyKey
       \ contained

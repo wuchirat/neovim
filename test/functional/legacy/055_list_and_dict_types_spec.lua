@@ -1,8 +1,11 @@
 -- Tests for List and Dictionary types.
 
-local helpers = require('test.functional.helpers')(after_each)
-local feed, source = helpers.feed, helpers.source
-local clear, feed_command, expect = helpers.clear, helpers.feed_command, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, before_each = t.describe, t.it, t.before_each
+local feed, source = n.feed, n.source
+local clear, feed_command, expect = n.clear, n.feed_command, n.expect
 
 describe('list and dictionary types', function()
   before_each(clear)
@@ -191,6 +194,7 @@ describe('list and dictionary types', function()
       [3]]=])
   end)
 
+  -- luacheck: ignore 613 (Trailing whitespace in a string)
   it('assignment to a list', function()
     source([[
       let l = [0, 1, 2, 3]
@@ -228,7 +232,7 @@ describe('list and dictionary types', function()
       try
 	      let n = d[1500]
       catch
-	      $put =substitute(v:exception, '\v(.{14}).*( \d{4}).*', '\1\2', '')
+	      $put = substitute(v:exception, '\v(.{14}).*( \"\d{4}\").*', '\1\2', '')
       endtry
       " Lookup each items.
       for i in range(1500)
@@ -259,7 +263,7 @@ describe('list and dictionary types', function()
     expect([[
 
       3000 2900 2001 1600 1501
-      Vim(let):E716: 1500
+      Vim(let):E716: "1500"
       NONE 2999
       33=999
       {'33': 999}]])
@@ -327,214 +331,6 @@ describe('list and dictionary types', function()
 
       Vim(let):E698: 
       same list: 1]])
-  end)
-
-  it('locked variables (part 1)', function()
-    source([=[
-      let l = []
-      for depth in range(5)
-	      $put ='depth is ' . depth
-	      for u in range(3)
-	        unlet l
-	        let l = [0, [1, [2, 3]], {4: 5, 6: {7: 8}}]
-	        exe "lockvar " . depth . " l"
-	        if u == 1
-	          exe "unlockvar l"
-	        elseif u == 2
-	          exe "unlockvar " . depth . " l"
-	        endif
-	        let ps = islocked("l") . islocked("l[1]") . islocked("l[1][1]") .
-	          \ islocked("l[1][1][0]") . '-' . islocked("l[2]") .
-	          \ islocked("l[2]['6']") . islocked("l[2]['6'][7]")
-	        $put =ps
-	        let ps = ''
-	        try
-	          let l[1][1][0] = 99
-	          let ps .= 'p'
-	        catch
-	          let ps .= 'F'
-	        endtry
-	        try
-	          let l[1][1] = [99]
-	          let ps .= 'p'
-	        catch
-	          let ps .= 'F'
-	        endtry
-	        try
-	          let l[1] = [99]
-	          let ps .= 'p'
-	        catch
-	          let ps .= 'F'
-	        endtry
-	        try
-	          let l[2]['6'][7] = 99
-	          let ps .= 'p'
-	        catch
-	          let ps .= 'F'
-	        endtry
-	        try
-	          let l[2][6] = {99: 99}
-	          let ps .= 'p'
-	        catch
-	          let ps .= 'F'
-	        endtry
-	        try
-	          let l[2] = {99: 99}
-	          let ps .= 'p'
-	        catch
-	          let ps .= 'F'
-	        endtry
-	        try
-	          let l = [99]
-	          let ps .= 'p'
-	        catch
-	          let ps .= 'F'
-	        endtry
-	        $put =ps
-	      endfor
-      endfor]=])
-    expect([[
-
-      depth is 0
-      0000-000
-      ppppppp
-      0000-000
-      ppppppp
-      0000-000
-      ppppppp
-      depth is 1
-      1000-000
-      ppppppF
-      0000-000
-      ppppppp
-      0000-000
-      ppppppp
-      depth is 2
-      1100-100
-      ppFppFF
-      0000-000
-      ppppppp
-      0000-000
-      ppppppp
-      depth is 3
-      1110-110
-      pFFpFFF
-      0010-010
-      pFppFpp
-      0000-000
-      ppppppp
-      depth is 4
-      1111-111
-      FFFFFFF
-      0011-011
-      FFpFFpp
-      0000-000
-      ppppppp]])
-  end)
-
-  -- TODO In the original test the 5th line of this source() call was used.
-  -- But now the test only passes if I comment it.
-  it('unletting locked variables', function()
-    source([=[
-      let l = []
-      for depth in range(5)
-        $put ='depth is ' . depth
-        for u in range(3)
-          "unlet l
-          let l = [0, [1, [2, 3]], {4: 5, 6: {7: 8}}]
-          exe "lockvar " . depth . " l"
-          if u == 1
-            exe "unlockvar l"
-          elseif u == 2
-            exe "unlockvar " . depth . " l"
-          endif
-          let ps = islocked("l") . islocked("l[1]") . islocked("l[1][1]") .
-	          \ islocked("l[1][1][0]") . '-' . islocked("l[2]") .
-	          \ islocked("l[2]['6']") . islocked("l[2]['6'][7]")
-          $put =ps
-          let ps = ''
-          try
-            unlet l[2]['6'][7]
-            let ps .= 'p'
-          catch
-            let ps .= 'F'
-          endtry
-          try
-            unlet l[2][6]
-            let ps .= 'p'
-          catch
-            let ps .= 'F'
-          endtry
-          try
-            unlet l[2]
-            let ps .= 'p'
-          catch
-            let ps .= 'F'
-          endtry
-          try
-            unlet l[1][1][0]
-            let ps .= 'p'
-          catch
-            let ps .= 'F'
-          endtry
-          try
-            unlet l[1][1]
-            let ps .= 'p'
-          catch
-            let ps .= 'F'
-          endtry
-          try
-            unlet l[1]
-            let ps .= 'p'
-          catch
-            let ps .= 'F'
-          endtry
-          try
-            unlet l
-            let ps .= 'p'
-          catch
-            let ps .= 'F'
-          endtry
-          $put =ps
-        endfor
-      endfor]=])
-    expect([[
-
-      depth is 0
-      0000-000
-      ppppppp
-      0000-000
-      ppppppp
-      0000-000
-      ppppppp
-      depth is 1
-      1000-000
-      ppFppFp
-      0000-000
-      ppppppp
-      0000-000
-      ppppppp
-      depth is 2
-      1100-100
-      pFFpFFp
-      0000-000
-      ppppppp
-      0000-000
-      ppppppp
-      depth is 3
-      1110-110
-      FFFFFFp
-      0010-010
-      FppFppp
-      0000-000
-      ppppppp
-      depth is 4
-      1111-111
-      FFFFFFp
-      0011-011
-      FppFppp
-      0000-000
-      ppppppp]])
   end)
 
   it('locked variables and :unlet or list / dict functions', function()
@@ -665,7 +461,7 @@ describe('list and dictionary types', function()
       Vim(put):E741: 
       {'a': 99, 'b': 100}
       No remove() of write-protected scope-level variable:
-      Vim(put):E795: 
+      Vim(put):E742: 
       No extend() of write-protected scope-level variable:
       Vim(put):E742: 
       No :unlet of variable in locked scope:
@@ -673,30 +469,6 @@ describe('list and dictionary types', function()
       No :let += of locked list variable:
       Vim(let):E741: 
       ['a', 'b', 3]]=])
-  end)
-
-  it('locked variables (part 2)', function()
-    feed_command(
-      'let l = [1, 2, 3, 4]',
-      'lockvar! l',
-      '$put =string(l)',
-      'unlockvar l[1]',
-      'unlet l[0:1]',
-      '$put =string(l)',
-      'unlet l[1:2]',
-      '$put =string(l)',
-      'unlockvar l[1]',
-      'let l[0:1] = [0, 1]',
-      '$put =string(l)',
-      'let l[1:2] = [0, 1]',
-      '$put =string(l)')
-    expect([=[
-
-      [1, 2, 3, 4]
-      [1, 2, 3, 4]
-      [1, 2, 3, 4]
-      [1, 2, 3, 4]
-      [1, 2, 3, 4]]=])
   end)
 
   it(':lockvar/islocked() triggering script autoloading.', function()
@@ -778,7 +550,8 @@ describe('list and dictionary types', function()
       $put =string(sort(copy(l), 1))
       $put =string(sort(copy(l), 'i'))
       $put =string(sort(copy(l)))]=])
-    expect([=[
+    expect(
+      [=[
 
       ['-0', 'A11', 2, 'xaaa', 4, 'foo', 'foo6', 'foo', [0, 1, 2], 'x8', [0, 1, 2], 1.5]
       [1.5, [0, 1, 2], 'x8', [0, 1, 2], 'foo', 'foo6', 'foo', 4, 'xaaa', 2, 2, 'A11', '-0']
@@ -790,7 +563,8 @@ describe('list and dictionary types', function()
       [-1, 'one', 'two', 'three', 'four', 1.0e-15, 0.22, 7, 9, 12, 18, 22, 255]
       ['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}]
       ['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}]
-      ['BAR', 'Bar', 'FOO', 'FOOBAR', 'Foo', 'bar', 'foo', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}]]=])
+      ['BAR', 'Bar', 'FOO', 'FOOBAR', 'Foo', 'bar', 'foo', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}]]=]
+    )
   end)
 
   it('splitting a string to a list', function()
@@ -906,7 +680,7 @@ describe('list and dictionary types', function()
     feed('o<C-R>=a<CR><esc>')
     feed_command('lang C')
     feed_command('redir => a')
-    -- The test failes if this is not in one line.
+    -- The test fails if this is not in one line.
     feed_command("try|foobar|catch|let a = matchstr(v:exception,'^[^ ]*')|endtry")
     feed_command('redir END')
     feed('o<C-R>=a<CR><esc>')
@@ -915,7 +689,7 @@ describe('list and dictionary types', function()
       Vim(foldopen):E490:
 
 
-      Error detected while processing :
+      Error in :
       E492: Not an editor command: foobar|catch|let a = matchstr(v:exception,'^[^ ]*')|endtry
       ]])
   end)

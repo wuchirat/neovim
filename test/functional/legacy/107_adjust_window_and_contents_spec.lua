@@ -1,24 +1,23 @@
 -- Tests for adjusting window and contents
 
-local helpers = require('test.functional.helpers')(after_each)
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
 local Screen = require('test.functional.ui.screen')
 
-local wait = helpers.wait
-local clear = helpers.clear
-local insert = helpers.insert
-local command = helpers.command
-
-if helpers.pending_win32(pending) then return end
+local describe, it, setup = t.describe, t.it, t.setup
+local poke_eventloop = n.poke_eventloop
+local clear = n.clear
+local insert = n.insert
+local command = n.command
 
 describe('107', function()
   setup(clear)
 
   it('is working', function()
     local screen = Screen.new()
-    screen:attach()
 
     insert('start:')
-    wait()
+    poke_eventloop()
     command('new')
     command('call setline(1, range(1,256))')
     command('let r=[]')
@@ -52,15 +51,7 @@ describe('107', function()
       [1, '1  ']                                           |
       [50, '50 ']                                          |
       ^[59, '59 ']                                          |
-      ~                                                    |
-      ~                                                    |
-      ~                                                    |
-      ~                                                    |
-      ~                                                    |
-      ~                                                    |
-      ~                                                    |
-      ~                                                    |
-      ~                                                    |
+      {1:~                                                    }|*9
       3 more lines                                         |
     ]])
   end)

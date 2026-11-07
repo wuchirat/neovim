@@ -1,8 +1,8 @@
 " Vim indent file
 " Language:     tf (TinyFugue)
 " Maintainer:   Christian J. Robinson <heptite@gmail.com>
-" URL:          http://christianrobinson.name/vim/indent/tf.vim
-" Last Change:  2002 May 29
+" URL:          http://www.vim.org/scripts/script.php?script_id=174
+" Last Change:  2022 Apr 25
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -13,6 +13,8 @@ let b:did_indent = 1
 setlocal indentexpr=GetTFIndent()
 setlocal indentkeys-=0{,0} indentkeys-=0# indentkeys-=:
 setlocal indentkeys+==/endif,=/then,=/else,=/done,0;
+
+let b:undo_indent = "setlocal indentexpr< indentkeys<"
 
 " Only define the function once:
 if exists("*GetTFIndent")
@@ -38,14 +40,14 @@ function GetTFIndent()
 	endif
 
 	if line =~ '\(/def.*\\\|/for.*\(%;\s*\)\@\<!\\\)$'
-		let ind = ind + &sw
+		let ind = ind + shiftwidth()
 	elseif line =~ '\(/if\|/else\|/then\)'
 		if line !~ '/endif'
-			let ind = ind + &sw
+			let ind = ind + shiftwidth()
 		endif
 	elseif line =~ '/while'
 		if line !~ '/done'
-			let ind = ind + &sw
+			let ind = ind + shiftwidth()
 		endif
 	endif
 
@@ -53,11 +55,11 @@ function GetTFIndent()
 
 	if line =~ '\(/else\|/endif\|/then\)'
 		if line !~ '/if'
-			let ind = ind - &sw
+			let ind = ind - shiftwidth()
 		endif
 	elseif line =~ '/done'
 		if line !~ '/while'
-			let ind = ind - &sw
+			let ind = ind - shiftwidth()
 		endif
 	endif
 

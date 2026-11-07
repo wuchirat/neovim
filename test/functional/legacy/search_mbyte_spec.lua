@@ -1,10 +1,12 @@
-local helpers = require('test.functional.helpers')(after_each)
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
 
-local wait = helpers.wait
-local clear = helpers.clear
-local insert = helpers.insert
-local expect = helpers.expect
-local command = helpers.command
+local describe, it, before_each = t.describe, t.it, t.before_each
+local poke_eventloop = n.poke_eventloop
+local clear = n.clear
+local insert = n.insert
+local expect = n.expect
+local command = n.command
 
 describe('search_mbyte', function()
   before_each(clear)
@@ -15,7 +17,7 @@ describe('search_mbyte', function()
 
       Test bce:
       Ａ]=])
-    wait()
+    poke_eventloop()
 
     command('/^Test bce:/+1')
     command([[$put =search('Ａ', 'bce', line('.'))]])

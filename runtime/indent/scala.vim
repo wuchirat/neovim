@@ -4,6 +4,7 @@
 " Modifications By:     Derek Wyatt
 " URL:                  https://github.com/derekwyatt/vim-scala
 " Last Change:          2016 Aug 26
+"                       2023 Aug 28 by Vim Project (undo_indent)
 
 if exists("b:did_indent")
   finish
@@ -14,13 +15,18 @@ setlocal autoindent
 setlocal indentexpr=GetScalaIndent()
 setlocal indentkeys=0{,0},0),!^F,<>>,o,O,e,=case,<CR>
 
+let b:undo_indent = "setl ai< inde< indk<"
+
 if exists("*GetScalaIndent")
   finish
 endif
 let s:keepcpo= &cpo
 set cpo&vim
 
-let s:defMatcher = '\%(\%(private\|protected\)\%(\[[^\]]*\]\)\?\s\+\|abstract\s\+\|override\s\+\)*\<def\>'
+let s:annotationMatcher = '@[A-Za-z._]\+\s\+'
+let s:modifierMatcher = s:annotationMatcher . '\|\%(private\|protected\)\%(\[[^\]]*\]\)\?\s\+\|abstract\s\+\|override\s\+\|final\s\+'
+let s:defMatcher = '\%(' . s:modifierMatcher . '\)*\<def\>'
+let s:valMatcher = '\%(' . s:modifierMatcher . '\|lazy\s\+\)*\<va[lr]\>'
 let s:funcNameMatcher = '\w\+'
 let s:typeSpecMatcher = '\%(\s*\[\_[^\]]*\]\)'
 let s:defArgMatcher = '\%((\_.\{-})\)'
@@ -184,7 +190,7 @@ function! scala#NumberOfBraceGroups(line)
 endfunction
 
 function! scala#MatchesIncompleteDefValr(line)
-  if a:line =~ '^\s*\%(' . s:defMatcher . '\|\<va[lr]\>\).*[=({]\s*$'
+  if a:line =~ '^\s*\%(' . s:defMatcher . '\|' . s:valMatcher . '\).*[=({]\s*$'
     return 1
   else
     return 0
@@ -412,33 +418,33 @@ function! GetScalaIndent()
     if prevline =~ '^\s*\.'
       return ind
     else
-      return ind + &shiftwidth
+      return ind + shiftwidth()
     endif
   endif
 
   " Indent html literals
   if prevline !~ '/>\s*$' && prevline =~ '^\s*<[a-zA-Z][^>]*>\s*$'
     call scala#ConditionalConfirm("3")
-    return ind + &shiftwidth
+    return ind + shiftwidth()
   endif
 
   " assumes curly braces around try-block
   if curline =~ '^\s*}\s*\<catch\>'
-    return ind - &shiftwidth
+    return ind - shiftwidth()
   elseif curline =~ '^\s*\<catch\>'
     return ind
   endif
 
-  " Add a 'shiftwidth' after lines that start a block
+  " Add a shiftwidth()' after lines that start a block
   " If 'if', 'for' or 'while' end with ), this is a one-line block
   " If 'val', 'var', 'def' end with =, this is a one-line block
   if (prevline =~ '^\s*\<\%(\%(}\?\s*else\s\+\)\?if\|for\|while\)\>.*[)=]\s*$' && scala#NumberOfBraceGroups(prevline) <= 1)
         \ || prevline =~ '^\s*' . s:defMatcher . '.*=\s*$'
-        \ || prevline =~ '^\s*\<va[lr]\>.*[=]\s*$'
+        \ || prevline =~ '^\s*' . s:valMatcher . '.*[=]\s*$'
         \ || prevline =~ '^\s*\%(}\s*\)\?\<else\>\s*$'
         \ || prevline =~ '=\s*$'
     call scala#ConditionalConfirm("4")
-    let ind = ind + &shiftwidth
+    let ind = ind + shiftwidth()
   elseif prevline =~ '^\s*\<\%(}\?\s*else\s\+\)\?if\>' && curline =~ '^\s*}\?\s*\<else\>'
     return ind
   endif
@@ -447,7 +453,7 @@ function! GetScalaIndent()
   let bracketCount = scala#CountBrackets(prevline, '{', '}')
   if bracketCount > 0 || prevline =~ '.*{\s*$'
     call scala#ConditionalConfirm("5b")
-    let ind = ind + &shiftwidth
+    let ind = ind + shiftwidth()
   elseif bracketCount < 0
     call scala#ConditionalConfirm("6b")
     " if the closing brace actually completes the braces entirely, then we
@@ -475,7 +481,7 @@ function! GetScalaIndent()
     let bracketCount = scala#CountBrackets(prevline, '(', ')')
     if bracketCount > 0 || prevline =~ '.*(\s*$'
       call scala#ConditionalConfirm("5a")
-      let ind = ind + &shiftwidth
+      let ind = ind + shiftwidth()
     elseif bracketCount < 0
       call scala#ConditionalConfirm("6a")
       " if the closing brace actually completes the braces entirely, then we
@@ -497,7 +503,7 @@ function! GetScalaIndent()
       else
         " This is the only part that's different from from the '{', '}' one below
         " Yup... some refactoring is necessary at some point.
-        let ind = ind + (bracketCount * &shiftwidth)
+        let ind = ind + (bracketCount * shiftwidth())
         let lineCompletedBrackets = 1
       endif
     endif
@@ -506,10 +512,10 @@ function! GetScalaIndent()
   if curline =~ '^\s*}\?\s*\<else\>\%(\s\+\<if\>\s*(.*)\)\?\s*{\?\s*$' &&
    \ ! scala#LineIsCompleteIf(prevline) &&
    \ prevline !~ '^.*}\s*$'
-    let ind = ind - &shiftwidth
+    let ind = ind - shiftwidth()
   endif
 
-  " Subtract a 'shiftwidth' on '}' or html
+  " Subtract a shiftwidth()' on '}' or html
   let curCurlyCount = scala#CountCurlies(curline)
   if curCurlyCount < 0
     call scala#ConditionalConfirm("14a")
@@ -517,7 +523,7 @@ function! GetScalaIndent()
     return indent(matchline)
   elseif curline =~ '^\s*</[a-zA-Z][^>]*>'
     call scala#ConditionalConfirm("14c")
-    return ind - &shiftwidth
+    return ind - shiftwidth()
   endif
 
   let prevParenCount = scala#CountParens(prevline)
@@ -529,7 +535,7 @@ function! GetScalaIndent()
   let prevCurlyCount = scala#CountCurlies(prevline)
   if prevCurlyCount == 0 && prevline =~ '^.*\%(=>\|⇒\)\s*$' && prevline !~ '^\s*this\s*:.*\%(=>\|⇒\)\s*$' && curline !~ '^\s*\<case\>'
     call scala#ConditionalConfirm("16")
-    let ind = ind + &shiftwidth
+    let ind = ind + shiftwidth()
   endif
 
   if ind == originalIndentValue && curline =~ '^\s*\<case\>'
@@ -555,7 +561,7 @@ function! GetScalaIndent()
   if scala#LineIsAClosingXML(prevline)
     if scala#LineCompletesXML(prevlnum, prevline)
       call scala#ConditionalConfirm("20a")
-      return ind - &shiftwidth
+      return ind - shiftwidth()
     else
       call scala#ConditionalConfirm("20b")
       return ind
@@ -566,7 +572,7 @@ function! GetScalaIndent()
     "let indentMultiplier = scala#LineCompletesDefValr(prevlnum, prevline)
     "if indentMultiplier != 0
     "  call scala#ConditionalConfirm("19a")
-    "  let ind = ind - (indentMultiplier * &shiftwidth)
+    "  let ind = ind - (indentMultiplier * shiftwidth())
     let defValrLine = scala#Test(prevlnum, prevline, '{', '}')
     if defValrLine != -1
       call scala#ConditionalConfirm("21a")
@@ -575,10 +581,10 @@ function! GetScalaIndent()
       call scala#ConditionalConfirm("21b")
       if scala#GetLine(prevnonblank(prevlnum - 1)) =~ '^.*\<else\>\s*\%(//.*\)\?$'
         call scala#ConditionalConfirm("21c")
-        let ind = ind - &shiftwidth
+        let ind = ind - shiftwidth()
       elseif scala#LineCompletesIfElse(prevlnum, prevline)
         call scala#ConditionalConfirm("21d")
-        let ind = ind - &shiftwidth
+        let ind = ind - shiftwidth()
       elseif scala#CountParens(curline) < 0 && curline =~ '^\s*)' && scala#GetLine(scala#GetLineThatMatchesBracket('(', ')')) =~ '.*(\s*$'
         " Handles situations that look like this:
         "
@@ -592,7 +598,7 @@ function! GetScalaIndent()
         "     10
         "   ).somethingHere()
         call scala#ConditionalConfirm("21e")
-        let ind = ind - &shiftwidth
+        let ind = ind - shiftwidth()
       endif
     endif
   endif

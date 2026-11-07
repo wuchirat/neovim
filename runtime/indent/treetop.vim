@@ -1,7 +1,8 @@
 " Vim indent file
-" Language:         Treetop
-" Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2011-03-14
+" Language:		Treetop
+" Maintainer:		Doug Kearns <dougkearns@gmail.com>
+" Previous Maintainer:	Nikolai Weibull <now@bitwi.se>
+" Last Change:		2022 April 25
 
 if exists("b:did_indent")
   finish
@@ -11,6 +12,8 @@ let b:did_indent = 1
 setlocal indentexpr=GetTreetopIndent()
 setlocal indentkeys=0{,0},!^F,o,O,=end
 setlocal nosmartindent
+
+let b:undo_indent = "setl inde< indk< si<"
 
 if exists("*GetTreetopIndent")
   finish
@@ -26,13 +29,13 @@ function GetTreetopIndent()
   let line = getline(pnum)
 
   if line =~ '^\s*\%(grammar\|module\|rule\)\>'
-    let ind += &sw
+    let ind += shiftwidth()
   endif
 
   let line = getline(v:lnum)
   if line =~ '^\s*end\>'
-    let ind -= &sw
+    let ind -= shiftwidth()
   end
 
-  retur ind
+  return ind
 endfunction

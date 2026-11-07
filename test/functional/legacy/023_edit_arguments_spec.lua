@@ -1,9 +1,12 @@
 -- Tests for complicated + argument to :edit command
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear, insert = helpers.clear, helpers.insert
-local command, expect = helpers.command, helpers.expect
-local wait = helpers.wait
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup, teardown = t.describe, t.it, t.setup, t.teardown
+local clear, insert = n.clear, n.insert
+local command, expect = n.command, n.expect
+local poke_eventloop = n.poke_eventloop
 
 describe(':edit', function()
   setup(clear)
@@ -13,7 +16,7 @@ describe(':edit', function()
       The result should be in Xfile1: "fooPIPEbar", in Xfile2: "fooSLASHbar"
       foo|bar
       foo/bar]])
-    wait()
+    poke_eventloop()
 
     -- Prepare some test files
     command('$-1w! Xfile1')
@@ -28,7 +31,7 @@ describe(':edit', function()
 
     -- Open Xfile2 using '|' range
     command('edit Xfile2|1')
-    command("s/\\//SLASH/")
+    command('s/\\//SLASH/')
     command('yank A')
     command('w! Xfile2')
 

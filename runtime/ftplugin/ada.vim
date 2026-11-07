@@ -2,7 +2,8 @@
 "  Description: Perform Ada specific completion & tagging.
 "     Language: Ada (2005)
 "	   $Id: ada.vim 887 2008-07-08 14:29:01Z krischik $
-"   Maintainer: Martin Krischik <krischik@users.sourceforge.net>
+"   Maintainer: This runtime file is looking for a new maintainer.
+"   Previous Maintainer: Martin Krischik <krischik@users.sourceforge.net>
 "		Taylor Venable <taylor@metasyntax.net>
 "		Neil Bird <neil@fnxweb.com>
 "      $Author: krischik $
@@ -19,6 +20,11 @@
 "                             autoload
 "		05.11.2006 MK Bram suggested to save on spaces
 "		08.07.2007 TV fix default compiler problems.
+"		05.09.2025    do not globally set 'ignorecase'/'smartcase' option
+"			      set undo_ftplugin
+"			      mark as unmaintained
+"			      use buffer-local abbreviation
+"		27.06.2026    add recommended style guard
 "    Help Page: ft-ada-plugin
 "------------------------------------------------------------------------------
 " Provides mapping overrides for tag jumping that figure out the current
@@ -48,8 +54,8 @@ setlocal complete=.,w,b,u,t,i
 
 " Section: case	     {{{1
 "
-setlocal nosmartcase
-setlocal ignorecase
+" setlocal nosmartcase
+" setlocal ignorecase
 
 " Section: formatoptions {{{1
 "
@@ -103,7 +109,7 @@ endif
 if !exists ("b:match_words")  &&
   \ exists ("loaded_matchit")
    "
-   " The following lines enable the macros/matchit.vim plugin for
+   " The following lines enable the matchit.vim plugin for
    " Ada-specific extended matching with the % key.
    "
    let s:notend      = '\%(\<end\s\+\)\@<!'
@@ -114,7 +120,6 @@ if !exists ("b:match_words")  &&
       \ '\%(\<do\>\|\<begin\>\):\<exception\>:\<end\>\s*\%($\|[;A-Z]\),' .
       \ s:notend . '\<record\>:\<end\>\s\+\<record\>'
 endif
-
 
 " Section: Compiler {{{1
 "
@@ -140,55 +145,65 @@ if exists("g:ada_folding")
    elseif g:ada_folding[0] == 's'
       setlocal foldmethod=syntax
    endif
-   setlocal tabstop=8
-   setlocal softtabstop=3
-   setlocal shiftwidth=3
+   if get(g:, 'ada_recommended_style',
+   \ get(g:, 'filetype_recommended_style', 1))
+      setlocal tabstop=8
+      setlocal softtabstop=3
+      setlocal shiftwidth=3
+   endif
 endif
 
 " Section: Abbrev {{{1
 "
 if exists("g:ada_abbrev")
-   iabbrev ret	return
-   iabbrev proc procedure
-   iabbrev pack package
-   iabbrev func function
+   iabbrev <buffer> ret	return
+   iabbrev <buffer> proc procedure
+   iabbrev <buffer> pack package
+   iabbrev <buffer> func function
 endif
 
 " Section: Commands, Mapping, Menus {{{1
-"
-call ada#Map_Popup (
-   \ 'Tag.List',
-   \  'l',
-   \ 'call ada#List_Tag ()')
-call ada#Map_Popup (
-   \'Tag.Jump',
-   \'j',
-   \'call ada#Jump_Tag ()')
-call ada#Map_Menu (
-   \'Tag.Create File',
-   \':AdaTagFile',
-   \'call ada#Create_Tags (''file'')')
-call ada#Map_Menu (
-   \'Tag.Create Dir',
-   \':AdaTagDir',
-   \'call ada#Create_Tags (''dir'')')
+if !exists(':AdaTagFile')
+  call ada#Map_Popup (
+     \ 'Tag.List',
+     \  'l',
+     \ 'call ada#List_Tag ()')
+  call ada#Map_Popup (
+     \'Tag.Jump',
+     \'j',
+     \'call ada#Jump_Tag ()')
+  call ada#Map_Menu (
+     \'Tag.Create File',
+     \':AdaTagFile',
+     \'call ada#Create_Tags (''file'')')
+  call ada#Map_Menu (
+     \'Tag.Create Dir',
+     \':AdaTagDir',
+     \'call ada#Create_Tags (''dir'')')
 
-call ada#Map_Menu (
-   \'Highlight.Toggle Space Errors',
-   \ ':AdaSpaces',
-   \'call ada#Switch_Syntax_Option (''space_errors'')')
-call ada#Map_Menu (
-   \'Highlight.Toggle Lines Errors',
-   \ ':AdaLines',
-   \'call ada#Switch_Syntax_Option (''line_errors'')')
-call ada#Map_Menu (
-   \'Highlight.Toggle Rainbow Color',
-   \ ':AdaRainbow',
-   \'call ada#Switch_Syntax_Option (''rainbow_color'')')
-call ada#Map_Menu (
-   \'Highlight.Toggle Standard Types',
-   \ ':AdaTypes',
-   \'call ada#Switch_Syntax_Option (''standard_types'')')
+  call ada#Map_Menu (
+     \'Highlight.Toggle Space Errors',
+     \ ':AdaSpaces',
+     \'call ada#Switch_Syntax_Option (''space_errors'')')
+  call ada#Map_Menu (
+     \'Highlight.Toggle Lines Errors',
+     \ ':AdaLines',
+     \'call ada#Switch_Syntax_Option (''line_errors'')')
+  call ada#Map_Menu (
+     \'Highlight.Toggle Rainbow Color',
+     \ ':AdaRainbow',
+     \'call ada#Switch_Syntax_Option (''rainbow_color'')')
+  call ada#Map_Menu (
+     \'Highlight.Toggle Standard Types',
+     \ ':AdaTypes',
+     \'call ada#Switch_Syntax_Option (''standard_types'')')
+endif
+"
+" Section: b:undo_ftplugin {{{1
+let b:undo_ftplugin = "setl fo< comments< tw< commentstring< complete< "
+	\ . "| setl completefunc< omnifunc< ts< sts< sw< fdm< fde< fdi< "
+	\ . "| setl fdm< fde< fdi< fdn< "
+	\ . "| unlet! b:match_words "
 
 " 1}}}
 " Reset cpoptions

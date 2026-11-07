@@ -1,11 +1,14 @@
 -- Tests for Unicode manipulations
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear, feed, insert = helpers.clear, helpers.feed, helpers.insert
-local command, expect = helpers.command, helpers.expect
-local eq, eval = helpers.eq, helpers.eval
-local source = helpers.source
-local wait = helpers.wait
+local t = require('test.testutil')
+local n = require('test.functional.testnvim')()
+
+local describe, it, before_each = t.describe, t.it, t.before_each
+local clear, feed, insert = n.clear, n.feed, n.insert
+local command, expect = n.command, n.expect
+local eq, eval = t.eq, n.eval
+local source = n.source
+local poke_eventloop = n.poke_eventloop
 
 describe('utf8', function()
   before_each(clear)
@@ -18,7 +21,7 @@ describe('utf8', function()
 
     -- Visual block Insert adjusts for multi-byte char
     feed('gg0l<C-V>jjIx<Esc>')
-    wait()
+    poke_eventloop()
 
     command('let r = getline(1, "$")')
     command('bwipeout!')
@@ -28,7 +31,7 @@ describe('utf8', function()
     expect([[
       start:
       axaa
-      xあああ
+       xあああ
       bxbb]])
   end)
 
@@ -54,6 +57,7 @@ describe('utf8', function()
     eq(1, eval('strchars("\\u20dd", 1)'))
   end)
 
+  -- luacheck: ignore 613 (Trailing whitespace in a string)
   it('customlist completion', function()
     source([[
       function! CustomComplete1(lead, line, pos)

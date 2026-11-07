@@ -1,146 +1,196 @@
+ifeq ($(OS),Windows_NT)
+  ifeq '$(findstring ;,$(PATH))' ';'
+    UNIX_LIKE := FALSE
+  else
+    UNIX_LIKE := TRUE
+  endif
+else
+  UNIX_LIKE := TRUE
+endif
+
+ifeq ($(UNIX_LIKE),FALSE)
+  SHELL := powershell.exe
+  .SHELLFLAGS := -NoProfile -NoLogo
+  MKDIR := @$$null = new-item -itemtype directory -force
+  TOUCH := @$$null = new-item -force
+  RM := remove-item -force
+  CMAKE := cmake
+  CMAKE_GENERATOR := Ninja
+  define rmdir
+    if (Test-Path $1) { remove-item -recurse $1 }
+  endef
+else
+  MKDIR := mkdir -p
+  TOUCH := touch
+  RM := rm -rf
+  CMAKE := $(shell (command -v cmake3 || command -v cmake || echo cmake))
+  CMAKE_GENERATOR ?= "$(shell (command -v ninja > /dev/null 2>&1 && echo "Ninja") || echo "Unix Makefiles")"
+  define rmdir
+    rm -rf $1
+  endef
+endif
+
+MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+MAKEFILE_DIR  := $(dir $(MAKEFILE_PATH))
+
 filter-false = $(strip $(filter-out 0 off OFF false FALSE,$1))
 filter-true = $(strip $(filter-out 1 on ON true TRUE,$1))
 
 # See contrib/local.mk.example
 -include local.mk
 
-CMAKE_PRG ?= $(shell (command -v cmake3 || echo cmake))
-CMAKE_BUILD_TYPE ?= Debug
+all: nvim
 
 CMAKE_FLAGS := -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE)
-DOC_DOWNLOAD_URL_BASE := https://raw.githubusercontent.com/neovim/doc/gh-pages
-CLINT_ERRORS_FILE_PATH := /reports/clint/errors.json
-
-BUILD_TYPE ?= $(shell (type ninja > /dev/null 2>&1 && echo "Ninja") || \
-    echo "Unix Makefiles")
-
-ifeq (,$(BUILD_TOOL))
-  ifeq (Ninja,$(BUILD_TYPE))
-    ifneq ($(shell $(CMAKE_PRG) --help 2>/dev/null | grep Ninja),)
-      BUILD_TOOL := ninja
-    else
-      # User's version of CMake doesn't support Ninja
-      BUILD_TOOL = $(MAKE)
-      BUILD_TYPE := Unix Makefiles
-    endif
-  else
-    BUILD_TOOL = $(MAKE)
-  endif
-endif
-
-ifneq ($(VERBOSE),)
-  # Only need to handle Ninja here.  Make will inherit the VERBOSE variable.
-  ifeq ($(BUILD_TYPE),Ninja)
-    VERBOSE_FLAG := -v
-  endif
-endif
-
-BUILD_CMD = $(BUILD_TOOL) $(VERBOSE_FLAG)
-
 # Extra CMake flags which extend the default set
 CMAKE_EXTRA_FLAGS ?=
-DEPS_CMAKE_FLAGS ?=
-USE_BUNDLED_DEPS ?=
+NVIM_PRG := $(MAKEFILE_DIR)/build/bin/nvim
 
-ifneq (,$(USE_BUNDLED_DEPS))
-  BUNDLED_CMAKE_FLAG := -DUSE_BUNDLED=$(USE_BUNDLED_DEPS)
+# CMAKE_INSTALL_PREFIX
+#   - May be passed directly or as part of CMAKE_EXTRA_FLAGS.
+#   - `checkprefix` target checks that it matches the CMake-cached value. #9615
+ifneq (,$(CMAKE_INSTALL_PREFIX)$(CMAKE_EXTRA_FLAGS))
+CMAKE_INSTALL_PREFIX := $(shell echo $(CMAKE_EXTRA_FLAGS) | 2>/dev/null \
+    grep -o 'CMAKE_INSTALL_PREFIX=[^ ]\+' | cut -d '=' -f2)
+endif
+ifneq (,$(CMAKE_INSTALL_PREFIX))
+override CMAKE_EXTRA_FLAGS += -DCMAKE_INSTALL_PREFIX=$(CMAKE_INSTALL_PREFIX)
+
+checkprefix:
+	@if [ -f build/.ran-cmake ]; then \
+	  cached_prefix=$(shell $(CMAKE) -L -N build | 2>/dev/null grep 'CMAKE_INSTALL_PREFIX' | cut -d '=' -f2); \
+	  if ! [ "$(CMAKE_INSTALL_PREFIX)" = "$$cached_prefix" ]; then \
+	    printf "Re-running CMake: CMAKE_INSTALL_PREFIX '$(CMAKE_INSTALL_PREFIX)' does not match cached value '%s'.\n" "$$cached_prefix"; \
+	    $(RM) build/.ran-cmake; \
+	  fi \
+	fi
+else
+checkprefix: ;
+endif
+
+DEPS_BUILD_DIR ?= ".deps"
+ifneq (1,$(words [$(DEPS_BUILD_DIR)]))
+  $(error DEPS_BUILD_DIR must not contain whitespace)
+endif
+
+DEPS_CMAKE_FLAGS ?=
+USE_BUNDLED ?=
+
+ifdef BUNDLED_CMAKE_FLAG
+  $(error BUNDLED_CMAKE_FLAG was removed. Use DEPS_CMAKE_FLAGS instead)
+endif
+
+ifdef BUNDLED_LUA_CMAKE_FLAG
+  $(error BUNDLED_LUA_CMAKE_FLAG was removed. Use DEPS_CMAKE_FLAGS instead)
+endif
+
+# If USE_BUNDLED is non-empty, prepend the flag to DEPS_CMAKE_FLAGS
+ifneq (,$(USE_BUNDLED))
+  DEPS_CMAKE_FLAGS := -DUSE_BUNDLED=$(USE_BUNDLED) $(DEPS_CMAKE_FLAGS)
 endif
 
 ifneq (,$(findstring functionaltest-lua,$(MAKECMDGOALS)))
-  BUNDLED_LUA_CMAKE_FLAG := -DUSE_BUNDLED_LUA=ON
-  $(shell [ -x .deps/usr/bin/lua ] || rm build/.ran-*)
+  DEPS_CMAKE_FLAGS := -DUSE_BUNDLED_LUA=ON $(DEPS_CMAKE_FLAGS)
+  $(shell [ -x $(DEPS_BUILD_DIR)/usr/bin/lua ] || $(RM) build/.ran-*)
 endif
 
 # For use where we want to make sure only a single job is run.  This does issue 
 # a warning, but we need to keep SCRIPTS argument.
 SINGLE_MAKE = export MAKEFLAGS= ; $(MAKE)
 
-all: nvim
-
 nvim: build/.ran-cmake deps
-	+$(BUILD_CMD) -C build
+	$(CMAKE) --build build
 
 libnvim: build/.ran-cmake deps
-	+$(BUILD_CMD) -C build libnvim
+	$(CMAKE) --build build --target libnvim
 
 cmake:
-	touch CMakeLists.txt
+	$(TOUCH) CMakeLists.txt
 	$(MAKE) build/.ran-cmake
 
 build/.ran-cmake: | deps
-	cd build && $(CMAKE_PRG) -G '$(BUILD_TYPE)' $(CMAKE_FLAGS) $(CMAKE_EXTRA_FLAGS) ..
-	touch $@
+	$(CMAKE) -B build -G $(CMAKE_GENERATOR) $(CMAKE_FLAGS) $(CMAKE_EXTRA_FLAGS) $(MAKEFILE_DIR)
+	$(TOUCH) $@
 
-deps: | build/.ran-third-party-cmake
-ifeq ($(call filter-true,$(USE_BUNDLED_DEPS)),)
-	+$(BUILD_CMD) -C .deps
+ifneq ($(call filter-true,$(USE_BUNDLED)),)
+deps: ;
+else
+deps: | build/.ran-deps-cmake
+	$(CMAKE) --build $(DEPS_BUILD_DIR)
+
+$(DEPS_BUILD_DIR):
+	$(MKDIR) $@
+build/.ran-deps-cmake:: $(DEPS_BUILD_DIR)
+	$(CMAKE) -S $(MAKEFILE_DIR)/cmake.deps -B $(DEPS_BUILD_DIR) -G $(CMAKE_GENERATOR) $(DEPS_CMAKE_FLAGS)
 endif
 
-build/.ran-third-party-cmake:
-ifeq ($(call filter-true,$(USE_BUNDLED_DEPS)),)
-	mkdir -p .deps
-	cd .deps && \
-		$(CMAKE_PRG) -G '$(BUILD_TYPE)' $(BUNDLED_CMAKE_FLAG) $(BUNDLED_LUA_CMAKE_FLAG) \
-		$(DEPS_CMAKE_FLAGS) ../third-party
-endif
-	mkdir -p build
-	touch $@
+build/.ran-deps-cmake::
+	$(MKDIR) build
+	$(TOUCH) "$@"
 
 # TODO: cmake 3.2+ add_custom_target() has a USES_TERMINAL flag.
-oldtest: | nvim helptags
-	+$(SINGLE_MAKE) -C src/nvim/testdir clean
+oldtest: | nvim
+	$(SINGLE_MAKE) -C test/old/testdir clean
 ifeq ($(strip $(TEST_FILE)),)
-	+$(SINGLE_MAKE) -C src/nvim/testdir NVIM_PRG="$(realpath build/bin/nvim)" $(MAKEOVERRIDES)
+	$(SINGLE_MAKE) -C test/old/testdir NVIM_PRG=$(NVIM_PRG) $(MAKEOVERRIDES)
 else
-	+$(SINGLE_MAKE) -C src/nvim/testdir NVIM_PRG="$(realpath build/bin/nvim)" NEW_TESTS=$(TEST_FILE) SCRIPTS= $(MAKEOVERRIDES)
+	@# Handle TEST_FILE=test_foo{,.res,.vim}.
+	$(SINGLE_MAKE) -C test/old/testdir NVIM_PRG=$(NVIM_PRG) SCRIPTS= $(MAKEOVERRIDES) $(patsubst %.vim,%,$(patsubst %.res,%,$(TEST_FILE)))
 endif
 
-helptags: | nvim
-	+$(BUILD_CMD) -C build helptags
-
-functionaltest: | nvim
-	+$(BUILD_CMD) -C build functionaltest
+# Build oldtest by specifying the relative .vim filename.
+.PHONY: phony_force
+test/old/testdir/%.vim: phony_force nvim
+	$(SINGLE_MAKE) -C test/old/testdir NVIM_PRG=$(NVIM_PRG) SCRIPTS= $(MAKEOVERRIDES) $(patsubst test/old/testdir/%.vim,%,$@)
 
 functionaltest-lua: | nvim
-	+$(BUILD_CMD) -C build functionaltest-lua
+	$(CMAKE) --build build --target functionaltest
 
-testlint: | build/.ran-cmake deps
-	$(BUILD_CMD) -C build testlint
+FORMAT=formatc formatlua formatquery format
+LINT=lintlua lintsh lintc clang-analyzer lintcommit lintdoc lintdocurls lint emmylua-check lintquery linterrcodes
+TEST=functionaltest unittest
+generated-sources benchmark $(FORMAT) $(LINT) $(TEST) doc: | build/.ran-cmake
+	$(CMAKE) --build build --target $@
 
-lualint: | build/.ran-cmake deps
-	$(BUILD_CMD) -C build lualint
+test: $(TEST)
 
-unittest: | nvim
-	+$(BUILD_CMD) -C build unittest
-
-benchmark: | nvim
-	+$(BUILD_CMD) -C build benchmark
-
-test: functionaltest unittest
+# iwyu-fix-includes can be downloaded from
+# https://github.com/include-what-you-use/include-what-you-use/blob/master/fix_includes.py.
+# Create a iwyu-fix-includes shell script in your $PATH that invokes the python script.
+iwyu: build/.ran-cmake
+	$(CMAKE) --preset iwyu
+	$(CMAKE) --build build > build/iwyu.log
+	iwyu-fix-includes --only_re="src/nvim" --ignore_re="(src/nvim/eval/encode.c\
+	|src/nvim/auto/\
+	|src/nvim/os/lang.c\
+	|src/nvim/map.c\
+	)" --nosafe_headers < build/iwyu.log
+	$(CMAKE) -B build -U ENABLE_IWYU
+	$(CMAKE) --build build
 
 clean:
-	+test -d build && $(BUILD_CMD) -C build clean || true
-	$(MAKE) -C src/nvim/testdir clean
-	$(MAKE) -C runtime/doc clean
+ifneq ($(wildcard build),)
+	$(CMAKE) --build build --target clean
+endif
+	$(MAKE) -C test/old/testdir clean
 
-distclean: clean
-	rm -rf .deps build
+distclean:
+	$(call rmdir, $(DEPS_BUILD_DIR))
+	$(call rmdir, build)
+	$(call rmdir, .zig-cache)
+	$(call rmdir, zig-out)
+	$(MAKE) clean
 
-install: | nvim
-	+$(BUILD_CMD) -C build install
-
-clint: build/.ran-cmake
-	+$(BUILD_CMD) -C build clint
-
-clint-full: build/.ran-cmake
-	+$(BUILD_CMD) -C build clint-full
-
-check-single-includes: build/.ran-cmake
-	+$(BUILD_CMD) -C build check-single-includes
+install: checkprefix nvim
+	$(CMAKE) --install build
 
 appimage:
 	bash scripts/genappimage.sh
 
-lint: check-single-includes clint testlint lualint
+# Build an appimage with embedded update information.
+#   appimage-nightly: for nightly builds
+#   appimage-latest: for a release
+appimage-%:
+	bash scripts/genappimage.sh $*
 
-.PHONY: test testlint lualint functionaltest unittest lint clint clean distclean nvim libnvim cmake deps install appimage
+.PHONY: test clean distclean nvim libnvim cmake deps install appimage checkprefix benchmark $(FORMAT) $(LINT) $(TEST)

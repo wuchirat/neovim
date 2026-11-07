@@ -1,12 +1,13 @@
-local helpers = require('test.functional.helpers')(after_each)
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
 
-local eq = helpers.eq
-local clear = helpers.clear
-local insert = helpers.insert
-local feed = helpers.feed
-local expect = helpers.expect
-local feed_command = helpers.feed_command
-local exc_exec = helpers.exc_exec
+local describe, it, before_each = t.describe, t.it, t.before_each
+local clear = n.clear
+local insert = n.insert
+local feed = n.feed
+local expect = n.expect
+local feed_command = n.feed_command
+local command = n.command
 
 describe(':undojoin command', function()
   before_each(function()
@@ -32,7 +33,6 @@ describe(':undojoin command', function()
     Line of text 2]])
   end)
   it('does not raise an error when called twice', function()
-    local ret = exc_exec('undojoin | undojoin')
-    eq(0, ret)
+    command('undojoin | undojoin')
   end)
 end)

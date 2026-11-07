@@ -1,10 +1,12 @@
 -- Tests for :sort command.
 
-local helpers = require('test.functional.helpers')(after_each)
+local t = require('test.testutil')
+local describe, it, before_each = t.describe, t.it, t.before_each
+local pcall_err = t.pcall_err
+local n = require('test.functional.testnvim')()
 
-local insert, command, clear, expect, eq, wait = helpers.insert,
-  helpers.command, helpers.clear, helpers.expect, helpers.eq, helpers.wait
-local exc_exec = helpers.exc_exec
+local insert, command, clear, expect, eq, poke_eventloop =
+  n.insert, n.command, n.clear, n.expect, t.eq, n.poke_eventloop
 
 describe(':sort', function()
   local text = [[
@@ -27,7 +29,7 @@ describe(':sort', function()
 
   it('alphabetical', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort')
     expect([[
 
@@ -67,7 +69,7 @@ describe(':sort', function()
       b321
       b321b
       ]])
-    wait()
+    poke_eventloop()
     command('sort n')
     expect([[
       abc
@@ -92,7 +94,7 @@ describe(':sort', function()
 
   it('hexadecimal', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort x')
     expect([[
 
@@ -114,7 +116,7 @@ describe(':sort', function()
 
   it('alphabetical, unique', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort u')
     expect([[
 
@@ -135,7 +137,7 @@ describe(':sort', function()
 
   it('alphabetical, reverse', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort!')
     expect([[
       c321d
@@ -157,7 +159,7 @@ describe(':sort', function()
 
   it('numerical, reverse', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort! n')
     expect([[
       b322b
@@ -179,7 +181,7 @@ describe(':sort', function()
 
   it('unique, reverse', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort! u')
     expect([[
       c321d
@@ -200,7 +202,7 @@ describe(':sort', function()
 
   it('octal', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort o')
     expect([[
       abc
@@ -222,7 +224,7 @@ describe(':sort', function()
 
   it('reverse, hexadecimal', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort! x')
     expect([[
       c321d
@@ -244,7 +246,7 @@ describe(':sort', function()
 
   it('alphabetical, skip first character', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort/./')
     expect([[
       a
@@ -266,7 +268,7 @@ describe(':sort', function()
 
   it('alphabetical, skip first 2 characters', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort/../')
     expect([[
       ab
@@ -288,7 +290,7 @@ describe(':sort', function()
 
   it('alphabetical, unique, skip first 2 characters', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort/../u')
     expect([[
       ab
@@ -309,7 +311,7 @@ describe(':sort', function()
 
   it('numerical, skip first character', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort/./n')
     expect([[
       abc
@@ -331,7 +333,7 @@ describe(':sort', function()
 
   it('alphabetical, sort on first character', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort/./r')
     expect([[
 
@@ -353,7 +355,7 @@ describe(':sort', function()
 
   it('alphabetical, sort on first 2 characters', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort/../r')
     expect([[
       a
@@ -375,7 +377,7 @@ describe(':sort', function()
 
   it('numerical, sort on first character', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command('sort/./rn')
     expect([[
       abc
@@ -397,7 +399,7 @@ describe(':sort', function()
 
   it('alphabetical, skip past first digit', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command([[sort/\d/]])
     expect([[
       abc
@@ -419,7 +421,7 @@ describe(':sort', function()
 
   it('alphabetical, sort on first digit', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command([[sort/\d/r]])
     expect([[
       abc
@@ -441,7 +443,7 @@ describe(':sort', function()
 
   it('numerical, skip past first digit', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command([[sort/\d/n]])
     expect([[
       abc
@@ -463,7 +465,7 @@ describe(':sort', function()
 
   it('numerical, sort on first digit', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command([[sort/\d/rn]])
     expect([[
       abc
@@ -485,7 +487,7 @@ describe(':sort', function()
 
   it('alphabetical, skip past first 2 digits', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command([[sort/\d\d/]])
     expect([[
       abc
@@ -507,7 +509,7 @@ describe(':sort', function()
 
   it('numerical, skip past first 2 digits', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command([[sort/\d\d/n]])
     expect([[
       abc
@@ -529,7 +531,7 @@ describe(':sort', function()
 
   it('hexadecimal, skip past first 2 digits', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command([[sort/\d\d/x]])
     expect([[
       abc
@@ -551,7 +553,7 @@ describe(':sort', function()
 
   it('alpha, on first 2 digits', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command([[sort/\d\d/r]])
     expect([[
       abc
@@ -573,7 +575,7 @@ describe(':sort', function()
 
   it('numeric, on first 2 digits', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command([[sort/\d\d/rn]])
     expect([[
       abc
@@ -595,7 +597,7 @@ describe(':sort', function()
 
   it('hexadecimal, on first 2 digits', function()
     insert(text)
-    wait()
+    poke_eventloop()
     command([[sort/\d\d/rx]])
     expect([[
       abc
@@ -618,7 +620,7 @@ describe(':sort', function()
   it('fails with wrong arguments', function()
     insert(text)
     -- This should fail with "E474: Invalid argument".
-    eq('Vim(sort):E474: Invalid argument', exc_exec('sort no'))
+    eq('Vim(sort):E474: Invalid argument', pcall_err(command, 'sort no'))
     expect(text)
   end)
 
@@ -638,7 +640,7 @@ describe(':sort', function()
       0b100010
       0b100100
       0b100010]])
-    wait()
+    poke_eventloop()
     command([[sort b]])
     expect([[
       0b000000
@@ -673,7 +675,7 @@ describe(':sort', function()
       0b101010
       0b000000
       b0b111000]])
-    wait()
+    poke_eventloop()
     command([[sort b]])
     expect([[
       0b000000
@@ -700,7 +702,7 @@ describe(':sort', function()
       1.15e-6
       -1.1e3
       -1.01e3]])
-    wait()
+    poke_eventloop()
     command([[sort f]])
     expect([[
       -1.1e3

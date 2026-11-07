@@ -1,8 +1,11 @@
 *usr_01.txt*	Nvim
 
-		     VIM USER MANUAL - by Bram Moolenaar
 
-			      About the manuals
+		     VIM USER MANUAL	by Bram Moolenaar
+
+
+==============================================================================
+About the manuals
 
 
 This chapter introduces the manuals available with Vim.  Read this to know the
@@ -41,11 +44,11 @@ the commands and options used for it.  Use these two commands:
 	Press  CTRL-O  to jump back (repeat to go further back).
 
 Many links are in vertical bars, like this: |bars|.  The bars themselves may
-be hidden or invisible, see below.  An option name, like 'number', a command
+be hidden or invisible; see below.  An option name, like 'number', a command
 in double quotes like ":write" and any other word can also be used as a link.
 Try it out: Move the cursor to  CTRL-]  and press CTRL-] on it.
 
-Other subjects can be found with the ":help" command, see |help.txt|.
+Other subjects can be found with the ":help" command; see |help.txt|.
 
 The bars and stars are usually hidden with the |conceal| feature.  They also
 use |hl-Ignore|, using the same color for the text as the background.  You can
@@ -57,21 +60,20 @@ make them visible with: >
 ==============================================================================
 *01.2*	Vim installed					   *setup-vimrc_example*
 
-It's not required for this tutorial, but we provide an example vimrc you may
-use:
+To create an empty vimrc: >
 
-	:!cp -i $VIMRUNTIME/vimrc_example.vim ~/.config/nvim/init.vim
-
-If the file already exists you probably want to keep it.
+	:call mkdir(stdpath('config'),'p')
+	:exe 'edit' stdpath('config').'/init.vim'
+	:write
 
 For more info see |vimrc|.
 
 ==============================================================================
 *01.3*	Using the Vim tutor			         *tutor* *vimtutor*
 
-Instead of reading the text (boring!) you can use the vimtutor to learn your
-first Vim commands.  This is a 30 minute tutorial that teaches the most basic
-Vim functionality hands-on.
+Instead of reading the text (boring!) you can use :Tutor to learn your first
+Vim commands.  This is a 30-minute tutorial that teaches the most basic Vim
+functionality hands-on.
 
 To start the tutorial, execute >
 
@@ -82,11 +84,11 @@ from within nvim. The tutorial will lead you from that point. Have fun!
 ==============================================================================
 *01.4*	Copyright					*manual-copyright*
 
-The Vim user manual and reference manual are Copyright (c) 1988-2003 by Bram
+The Vim user manual and reference manual are Copyright (c) 1988 by Bram
 Moolenaar.  This material may be distributed only subject to the terms and
 conditions set forth in the Open Publication License, v1.0 or later.  The
 latest version is presently available at:
-	     http://www.opencontent.org/openpub/
+	     https://opencontent.org/openpub/
 
 People who contribute to the manuals must agree with the above copyright
 notice.
@@ -104,10 +106,12 @@ manual.  Not only by providing literal text, but also by setting the tone and
 style.
 
 If you make money through selling the manuals, you are strongly encouraged to
-donate part of the profit to help AIDS victims in Uganda.  See |iccf|.
+donate part of the profit to help AIDS victims in Uganda.  See |Kuwasha|.
 
 ==============================================================================
 
 Next chapter: |usr_02.txt|  The first steps in Vim
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|
+
+vim:tw=78:ts=8:noet:ft=help:norl:

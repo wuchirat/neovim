@@ -1,21 +1,22 @@
 -- Test for Vim overrides of lua built-ins
-local helpers = require('test.functional.helpers')(after_each)
+local t = require('test.testutil')
+local n = require('test.functional.testnvim')()
 local Screen = require('test.functional.ui.screen')
 
-local eq = helpers.eq
-local neq = helpers.neq
-local NIL = helpers.NIL
-local feed = helpers.feed
-local clear = helpers.clear
-local funcs = helpers.funcs
-local meths = helpers.meths
-local iswin = helpers.iswin
-local command = helpers.command
-local write_file = helpers.write_file
-local redir_exec = helpers.redir_exec
-local alter_slashes = helpers.alter_slashes
-
-local screen
+local describe, it, before_each, after_each = t.describe, t.it, t.before_each, t.after_each
+local eq = t.eq
+local matches = t.matches
+local NIL = vim.NIL
+local feed = n.feed
+local clear = n.clear
+local fn = n.fn
+local api = n.api
+local command = n.command
+local write_file = t.write_file
+local exec_capture = n.exec_capture
+local exec_lua = n.exec_lua
+local pcall_err = t.pcall_err
+local is_os = t.is_os
 
 local fname = 'Xtest-functional-lua-overrides-luafile'
 
@@ -27,68 +28,215 @@ end)
 
 describe('print', function()
   it('returns nothing', function()
-    eq(NIL, funcs.luaeval('print("abc")'))
-    eq(0, funcs.luaeval('select("#", print("abc"))'))
+    eq(NIL, fn.luaeval('print("abc")'))
+    eq(0, fn.luaeval('select("#", print("abc"))'))
   end)
   it('allows catching printed text with :execute', function()
-    eq('\nabc', funcs.execute('lua print("abc")'))
-    eq('\nabc', funcs.execute('luado print("abc")'))
-    eq('\nabc', funcs.execute('call luaeval("print(\'abc\')")'))
+    eq('\nabc', fn.execute('lua print("abc")'))
+    eq('\nabc', fn.execute('luado print("abc")'))
+    eq('\nabc', fn.execute('call luaeval("print(\'abc\')")'))
     write_file(fname, 'print("abc")')
-    eq('\nabc', funcs.execute('luafile ' .. fname))
+    eq('\nabc', fn.execute('luafile ' .. fname))
 
-    eq('\nabc', redir_exec('lua print("abc")'))
-    eq('\nabc', redir_exec('luado print("abc")'))
-    eq('\nabc', redir_exec('call luaeval("print(\'abc\')")'))
+    eq('abc', exec_capture('lua print("abc")'))
+    eq('abc', exec_capture('luado print("abc")'))
+    eq('abc', exec_capture('call luaeval("print(\'abc\')")'))
     write_file(fname, 'print("abc")')
-    eq('\nabc', redir_exec('luafile ' .. fname))
+    eq('abc', exec_capture('luafile ' .. fname))
   end)
   it('handles errors in __tostring', function()
-    write_file(fname, [[
+    write_file(
+      fname,
+      [[
       local meta_nilerr = { __tostring = function() error(nil) end }
       local meta_abcerr = { __tostring = function() error("abc") end }
       local meta_tblout = { __tostring = function() return {"TEST"} end }
       v_nilerr = setmetatable({}, meta_nilerr)
       v_abcerr = setmetatable({}, meta_abcerr)
       v_tblout = setmetatable({}, meta_tblout)
-    ]])
-    eq('', redir_exec('luafile ' .. fname))
-    eq('\nE5114: Error while converting print argument #2: [NULL]',
-       redir_exec('lua print("foo", v_nilerr, "bar")'))
-    eq('\nE5114: Error while converting print argument #2: Xtest-functional-lua-overrides-luafile:2: abc',
-       redir_exec('lua print("foo", v_abcerr, "bar")'))
-    eq('\nE5114: Error while converting print argument #2: <Unknown error: lua_tolstring returned NULL for tostring result>',
-       redir_exec('lua print("foo", v_tblout, "bar")'))
+    ]]
+    )
+    eq('', exec_capture('luafile ' .. fname))
+    -- TODO(bfredl): these look weird, print() should not use "E5114:" style errors..
+    eq(
+      'Vim(lua):E5108: Lua: E5114: Converting print argument #2: nil',
+      pcall_err(command, 'lua print("foo", v_nilerr, "bar")')
+    )
+    eq(
+      'Vim(lua):E5108: Lua: E5114: Converting print argument #2: Xtest-functional-lua-overrides-luafile:2: abc',
+      pcall_err(command, 'lua print("foo", v_abcerr, "bar")')
+    )
+    matches(
+      '^Vim%(lua%):E5108: Lua: E5114: Converting print argument #2: table: 0x%x+$',
+      pcall_err(command, 'lua print("foo", v_tblout, "bar")')
+    )
+  end)
+  it('coerces error values into strings', function()
+    write_file(
+      fname,
+      [[
+    function string_error() error("my mistake") end
+    function number_error() error(1234) end
+    function nil_error() error(nil) end
+    function table_error() error({message = "my mistake"}) end
+    function custom_error()
+      local err = {message = "my mistake", code = 11234}
+      setmetatable(err, {
+        __tostring = function(t)
+          return "Internal Error [" .. t.code .. "] " .. t.message
+        end
+      })
+      error(err)
+    end
+    function bad_custom_error()
+      local err = {message = "my mistake", code = 11234}
+      setmetatable(err, {
+        -- intentionally not a function, downstream programmer has made an mistake
+        __tostring = "Internal Error [" .. err.code .. "] " .. err.message
+      })
+      error(err)
+    end
+    ]]
+    )
+    eq('', exec_capture('luafile ' .. fname))
+    eq(
+      'Vim(lua):E5108: Lua: Xtest-functional-lua-overrides-luafile:1: my mistake',
+      pcall_err(command, 'lua string_error()')
+    )
+    eq(
+      'Vim(lua):E5108: Lua: Xtest-functional-lua-overrides-luafile:2: 1234',
+      pcall_err(command, 'lua number_error()')
+    )
+    eq('Vim(lua):E5108: Lua: nil', pcall_err(command, 'lua nil_error()'))
+    matches('^Vim%(lua%):E5108: Lua: table: 0x%x+$', pcall_err(command, 'lua table_error()'))
+    eq(
+      'Vim(lua):E5108: Lua: Internal Error [11234] my mistake',
+      pcall_err(command, 'lua custom_error()')
+    )
+    eq('Vim(lua):E5108: Lua: [UNPRINTABLE ERROR]', pcall_err(command, 'lua bad_custom_error()'))
   end)
   it('prints strings with NULs and NLs correctly', function()
-    meths.set_option('more', true)
-    eq('\nabc ^@ def\nghi^@^@^@jkl\nTEST\n\n\nT\n',
-       redir_exec([[lua print("abc \0 def\nghi\0\0\0jkl\nTEST\n\n\nT\n")]]))
-    eq('\nabc ^@ def\nghi^@^@^@jkl\nTEST\n\n\nT^@',
-       redir_exec([[lua print("abc \0 def\nghi\0\0\0jkl\nTEST\n\n\nT\0")]]))
-    eq('\nT^@', redir_exec([[lua print("T\0")]]))
-    eq('\nT\n', redir_exec([[lua print("T\n")]]))
+    api.nvim_set_option_value('more', true, {})
+    eq(
+      'abc ^@ def\nghi^@^@^@jkl\nTEST\n\n\nT\n',
+      exec_capture([[lua print("abc \0 def\nghi\0\0\0jkl\nTEST\n\n\nT\n")]])
+    )
+    eq(
+      'abc ^@ def\nghi^@^@^@jkl\nTEST\n\n\nT^@',
+      exec_capture([[lua print("abc \0 def\nghi\0\0\0jkl\nTEST\n\n\nT\0")]])
+    )
+    eq('T^@', exec_capture([[lua print("T\0")]]))
+    eq('T\n', exec_capture([[lua print("T\n")]]))
   end)
   it('prints empty strings correctly', function()
     -- Regression: first test used to crash
-    eq('', redir_exec('lua print("")'))
-    eq('\n def', redir_exec('lua print("", "def")'))
-    eq('\nabc ', redir_exec('lua print("abc", "")'))
-    eq('\nabc  def', redir_exec('lua print("abc", "", "def")'))
+    eq('', exec_capture('lua print("")'))
+    eq(' def', exec_capture('lua print("", "def")'))
+    eq('abc ', exec_capture('lua print("abc", "")'))
+    eq('abc  def', exec_capture('lua print("abc", "", "def")'))
+  end)
+  it('defers printing in luv event handlers', function()
+    exec_lua(function(cmd)
+      function test()
+        local timer = vim.uv.new_timer()
+        local done = false
+        timer:start(10, 0, function()
+          print('very fast')
+          timer:close()
+          done = true
+        end)
+        -- be kind to slow travis OS X jobs:
+        -- loop until we know for sure the callback has been executed
+        while not done do
+          os.execute(cmd)
+          vim.uv.run('nowait') -- fake os_breakcheck()
+        end
+        print('very slow')
+        vim.api.nvim_command('sleep 1m') -- force deferred event processing
+      end
+    end, (is_os('win') and 'timeout 1') or 'sleep 0.1')
+    eq('very slow\nvery fast', exec_capture('lua test()'))
+  end)
+
+  it('blank line in message works', function()
+    local screen = Screen.new(40, 8)
+    feed([[:lua print('\na')<CR>]])
+    screen:expect {
+      grid = [[
+                                              |
+      {1:~                                       }|*3
+      {3:                                        }|
+                                              |
+      a                                       |
+      {6:Press ENTER or type command to continue}^ |
+    ]],
+    }
+    feed('<CR>')
+    feed([[:lua print('b\n\nc')<CR>]])
+    screen:expect {
+      grid = [[
+                                              |
+      {1:~                                       }|*2
+      {3:                                        }|
+      b                                       |
+                                              |
+      c                                       |
+      {6:Press ENTER or type command to continue}^ |
+    ]],
+    }
   end)
 end)
 
-describe('debug.debug', function()
+describe('_G.debug', function()
+  local screen --- @type test.functional.ui.screen
+
   before_each(function()
     screen = Screen.new()
-    screen:attach()
-    screen:set_default_attr_ids({
-      [0] = {bold=true, foreground=255},
-      E = {foreground = Screen.colors.Grey100, background = Screen.colors.Red},
-      cr = {bold = true, foreground = Screen.colors.SeaGreen4},
-    })
   end)
-  it('works', function()
+
+  it('if broken, Nvim reports it instead of crashing #41504', function()
+    -- If user code breaks `_G.debug.traceback`, Nvim should function enough to allow ":qa!".
+    -- But `_G.debug=nil` panics immediately, and that is intentional/wontfix.
+    for _, override in ipairs({ 'debug.traceback = nil', '_G.debug = {}' }) do
+      clear()
+      eq(
+        true,
+        exec_lua(([[
+          %s
+          local called = false
+          -- nvim_buf_call() is the shortest path from Lua to nlua_pcall().
+          vim.api.nvim_buf_call(0, function() called = true end)
+          return called
+        ]]):format(override))
+      )
+      -- Error reports the broken situation.
+      matches(
+        'boom\nNo traceback: debug.traceback is not a function',
+        pcall_err(exec_lua, [[vim.api.nvim_buf_call(0, function() error('boom') end)]])
+      )
+      -- vim.on_key() callbacks run on every keystroke, they should not break either.
+      exec_lua([[
+        _G.keys = 0
+        vim.on_key(function() _G.keys = _G.keys + 1 end)
+      ]])
+      feed('jjj')
+      eq(3, exec_lua('return _G.keys'))
+    end
+
+    -- We accept non-broken `debug.traceback` overrides (e.g. tui_spec.lua does this).
+    matches(
+      'boom %(custom traceback%)',
+      pcall_err(
+        exec_lua,
+        [[
+          debug.traceback = function(msg) return msg .. ' (custom traceback)' end
+          vim.api.nvim_buf_call(0, function() error('boom') end)
+        ]]
+      )
+    )
+  end)
+
+  it('debug() works', function()
     command([[lua
       function Test(a)
         print(a)
@@ -97,34 +245,20 @@ describe('debug.debug', function()
       end
     ]])
     feed(':lua Test()\n')
-    screen:expect([[
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
+    screen:expect {
+      grid = [[
+                                                           |
+      {1:~                                                    }|*10
+      {3:                                                     }|
       nil                                                  |
       lua_debug> ^                                          |
-    ]])
+    ]],
+    }
     feed('print("TEST")\n')
     screen:expect([[
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
+                                                           |
+      {1:~                                                    }|*8
+      {3:                                                     }|
       nil                                                  |
       lua_debug> print("TEST")                             |
       TEST                                                 |
@@ -132,170 +266,110 @@ describe('debug.debug', function()
     ]])
     feed('<C-c>')
     screen:expect([[
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
+                                                           |
+      {1:~                                                    }|*2
+      {3:                                                     }|
       nil                                                  |
       lua_debug> print("TEST")                             |
       TEST                                                 |
                                                            |
-      {E:E5105: Error while calling lua chunk: [string "<VimL }|
-      {E:compiled string>"]:5: attempt to perform arithmetic o}|
-      {E:n local 'a' (a nil value)}                            |
-      Interrupt: {cr:Press ENTER or type command to continue}^   |
+      {9:E5108: Lua: [string ":lua"]:5: attempt to perform ari}|
+      {9:thmetic on local 'a' (a nil value)}                   |
+      {9:stack traceback:}                                     |
+      {9:        [string ":lua"]:5: in function 'Test'}        |
+      {9:        [string ":lua"]:1: in main chunk}             |
+      Interrupt: {6:Press ENTER or type command to continue}^   |
     ]])
     feed('<C-l>:lua Test()\n')
     screen:expect([[
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
+                                                           |
+      {1:~                                                    }|*10
+      {3:                                                     }|
       nil                                                  |
       lua_debug> ^                                          |
     ]])
     feed('\n')
     screen:expect([[
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
-      {0:~                                                    }|
+                                                           |
+      {1:~                                                    }|*4
+      {3:                                                     }|
       nil                                                  |
       lua_debug>                                           |
-      {E:E5105: Error while calling lua chunk: [string "<VimL }|
-      {E:compiled string>"]:5: attempt to perform arithmetic o}|
-      {E:n local 'a' (a nil value)}                            |
-      {cr:Press ENTER or type command to continue}^              |
+      {9:E5108: Lua: [string ":lua"]:5: attempt to perform ari}|
+      {9:thmetic on local 'a' (a nil value)}                   |
+      {9:stack traceback:}                                     |
+      {9:        [string ":lua"]:5: in function 'Test'}        |
+      {9:        [string ":lua"]:1: in main chunk}             |
+      {6:Press ENTER or type command to continue}^              |
     ]])
+  end)
+
+  it("debug() can be safely exited with 'cont'", function()
+    feed('<cr>')
+    feed(':lua debug.debug() print("x")<cr>')
+    screen:expect {
+      grid = [[
+                                                           |
+      {1:~                                                    }|*12
+      lua_debug> ^                                          |
+    ]],
+    }
+
+    feed('conttt<cr>') -- misspelled cont; invalid syntax
+    screen:expect([[
+                                                           |
+      {1:~                                                    }|*8
+      {3:                                                     }|
+      lua_debug> conttt                                    |
+      {9:E5115: Loading Lua debug string: (debug command):1: '}|
+      {9:=' expected near '<eof>'}                             |
+      lua_debug> ^                                          |
+    ]])
+
+    feed('cont<cr>') -- exactly "cont", exit now
+    screen:expect([[
+                                                           |
+      {1:~                                                    }|*6
+      {3:                                                     }|
+      lua_debug> conttt                                    |
+      {9:E5115: Loading Lua debug string: (debug command):1: '}|
+      {9:=' expected near '<eof>'}                             |
+      lua_debug> cont                                      |
+      x                                                    |
+      {6:Press ENTER or type command to continue}^              |
+    ]])
+
+    feed('<cr>')
+    screen:expect {
+      grid = [[
+      ^                                                     |
+      {1:~                                                    }|*12
+                                                           |
+    ]],
+    }
   end)
 end)
 
-describe('package.path/package.cpath', function()
-  local sl = alter_slashes
-
-  local function get_new_paths(sufs, runtimepaths)
-    runtimepaths = runtimepaths or meths.list_runtime_paths()
-    local new_paths = {}
-    local sep = package.config:sub(1, 1)
-    for _, v in ipairs(runtimepaths) do
-      for _, suf in ipairs(sufs) do
-        new_paths[#new_paths + 1] = v .. sep .. 'lua' .. suf
-      end
-    end
-    return new_paths
-  end
-  local function execute_lua(cmd, ...)
-    return meths.execute_lua(cmd, {...})
-  end
-  local function eval_lua(expr, ...)
-    return meths.execute_lua('return ' .. expr, {...})
-  end
-  local function set_path(which, value)
-    return execute_lua('package[select(1, ...)] = select(2, ...)', which, value)
-  end
-
-  it('contains directories from &runtimepath on first invocation', function()
-    local new_paths = get_new_paths(sl{'/?.lua', '/?/init.lua'})
-    local new_paths_str = table.concat(new_paths, ';')
-    eq(new_paths_str, eval_lua('package.path'):sub(1, #new_paths_str))
-
-    local new_cpaths = get_new_paths(iswin() and {'\\?.dll'} or {'/?.so'})
-    local new_cpaths_str = table.concat(new_cpaths, ';')
-    eq(new_cpaths_str, eval_lua('package.cpath'):sub(1, #new_cpaths_str))
+describe('os.getenv', function()
+  it('returns nothing for undefined env var', function()
+    eq(NIL, fn.luaeval('os.getenv("XTEST_1")'))
   end)
-  it('puts directories from &runtimepath always at the start', function()
-    meths.set_option('runtimepath', 'a,b')
-    local new_paths = get_new_paths(sl{'/?.lua', '/?/init.lua'}, {'a', 'b'})
-    local new_paths_str = table.concat(new_paths, ';')
-    eq(new_paths_str, eval_lua('package.path'):sub(1, #new_paths_str))
-
-    set_path('path', sl'foo/?.lua;foo/?/init.lua;' .. new_paths_str)
-
-    neq(new_paths_str, eval_lua('package.path'):sub(1, #new_paths_str))
-
-    command('set runtimepath+=c')
-    new_paths = get_new_paths(sl{'/?.lua', '/?/init.lua'}, {'a', 'b', 'c'})
-    new_paths_str = table.concat(new_paths, ';')
-    eq(new_paths_str, eval_lua('package.path'):sub(1, #new_paths_str))
+  it('returns env var set by the parent process', function()
+    local value = 'foo'
+    clear({ env = { ['XTEST_1'] = value } })
+    eq(value, fn.luaeval('os.getenv("XTEST_1")'))
   end)
-  it('understands uncommon suffixes', function()
-    set_path('cpath', './?/foo/bar/baz/x.nlua')
-    meths.set_option('runtimepath', 'a')
-    local new_paths = get_new_paths({'/?/foo/bar/baz/x.nlua'}, {'a'})
-    local new_paths_str = table.concat(new_paths, ';')
-    eq(new_paths_str, eval_lua('package.cpath'):sub(1, #new_paths_str))
+  it('returns env var set by let', function()
+    local value = 'foo'
+    command('let $XTEST_1 = "' .. value .. '"')
+    eq(value, fn.luaeval('os.getenv("XTEST_1")'))
+  end)
+end)
 
-    set_path('cpath', './yyy?zzz/x')
-    meths.set_option('runtimepath', 'b')
-    new_paths = get_new_paths({'/yyy?zzz/x'}, {'b'})
-    new_paths_str = table.concat(new_paths, ';')
-    eq(new_paths_str, eval_lua('package.cpath'):sub(1, #new_paths_str))
-
-    set_path('cpath', './yyy?zzz/123?ghi/x')
-    meths.set_option('runtimepath', 'b')
-    new_paths = get_new_paths({'/yyy?zzz/123?ghi/x'}, {'b'})
-    new_paths_str = table.concat(new_paths, ';')
-    eq(new_paths_str, eval_lua('package.cpath'):sub(1, #new_paths_str))
-  end)
-  it('preserves empty items', function()
-    local many_empty_path = ';;;;;;'
-    local many_empty_cpath = ';;;;;;./?.luaso'
-    set_path('path', many_empty_path)
-    set_path('cpath', many_empty_cpath)
-    meths.set_option('runtimepath', 'a')
-    local new_paths = get_new_paths(sl{'/?.lua', '/?/init.lua'}, {'a'})
-    local new_paths_str = table.concat(new_paths, ';')
-    eq(new_paths_str .. ';' .. many_empty_path, eval_lua('package.path'))
-    local new_cpaths = get_new_paths({'/?.luaso'}, {'a'})
-    local new_cpaths_str = table.concat(new_cpaths, ';')
-    eq(new_cpaths_str .. ';' .. many_empty_cpath, eval_lua('package.cpath'))
-  end)
-  it('preserves empty value', function()
-    set_path('path', '')
-    meths.set_option('runtimepath', 'a')
-    local new_paths = get_new_paths(sl{'/?.lua', '/?/init.lua'}, {'a'})
-    local new_paths_str = table.concat(new_paths, ';')
-    eq(new_paths_str .. ';', eval_lua('package.path'))
-  end)
-  it('purges out all additions if runtimepath is set to empty', function()
-    local new_paths = get_new_paths(sl{'/?.lua', '/?/init.lua'})
-    local new_paths_str = table.concat(new_paths, ';')
-    local path = eval_lua('package.path')
-    eq(new_paths_str, path:sub(1, #new_paths_str))
-
-    local new_cpaths = get_new_paths(iswin() and {'\\?.dll'} or {'/?.so'})
-    local new_cpaths_str = table.concat(new_cpaths, ';')
-    local cpath = eval_lua('package.cpath')
-    eq(new_cpaths_str, cpath:sub(1, #new_cpaths_str))
-
-    meths.set_option('runtimepath', '')
-    eq(path:sub(#new_paths_str + 2, -1), eval_lua('package.path'))
-    eq(cpath:sub(#new_cpaths_str + 2, -1), eval_lua('package.cpath'))
-  end)
-  it('works with paths with escaped commas', function()
-    meths.set_option('runtimepath', '\\,')
-    local new_paths = get_new_paths(sl{'/?.lua', '/?/init.lua'}, {','})
-    local new_paths_str = table.concat(new_paths, ';')
-    eq(new_paths_str, eval_lua('package.path'):sub(1, #new_paths_str))
-  end)
-  it('ignores paths with semicolons', function()
-    meths.set_option('runtimepath', 'foo;bar,\\,')
-    local new_paths = get_new_paths(sl{'/?.lua', '/?/init.lua'}, {','})
-    local new_paths_str = table.concat(new_paths, ';')
-    eq(new_paths_str, eval_lua('package.path'):sub(1, #new_paths_str))
+-- "bit" module is always available, regardless if nvim is built with
+-- luajit or PUC lua 5.1.
+describe('bit module', function()
+  it('works', function()
+    eq(9, exec_lua [[ return require'bit'.band(11,13) ]])
   end)
 end)

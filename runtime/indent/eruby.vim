@@ -2,7 +2,7 @@
 " Language:		eRuby
 " Maintainer:		Tim Pope <vimNOSPAM@tpope.org>
 " URL:			https://github.com/vim-ruby/vim-ruby
-" Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
+" Last Change:		2019 Jan 06
 
 if exists("b:did_indent")
   finish
@@ -12,7 +12,7 @@ runtime! indent/ruby.vim
 unlet! b:did_indent
 setlocal indentexpr=
 
-if exists("b:eruby_subtype")
+if exists("b:eruby_subtype") && b:eruby_subtype != '' && b:eruby_subtype !=# 'eruby'
   exe "runtime! indent/".b:eruby_subtype.".vim"
 else
   runtime! indent/html.vim
@@ -95,6 +95,7 @@ function! GetErubyIndent(...)
     let ind = ind + sw
   endif
   if line !~# '^\s*<%' && line =~# '%>\s*$' && line !~# '^\s*end\>'
+	\ && synID(v:lnum, match(cline, '\S') + 1, 1) != hlID('htmlEndTag')
     let ind = ind - sw
   endif
   if cline =~# '^\s*[-=]\=%>\s*$'

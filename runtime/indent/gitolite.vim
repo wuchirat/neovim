@@ -1,8 +1,10 @@
 " Vim indent file
 " Language:	gitolite configuration
-" URL:		https://github.com/tmatilai/gitolite.vim
-" Maintainer:	Teemu Matilainen <teemu.matilainen@iki.fi>
-" Last Change:	2011-12-24
+" URL:		https://github.com/sitaramc/gitolite/blob/master/contrib/vim/indent/gitolite.vim
+"	(https://raw.githubusercontent.com/sitaramc/gitolite/master/contrib/vim/indent/gitolite.vim)
+" Maintainer:	Sitaram Chamarty <sitaramc@gmail.com>
+" (former Maintainer:	Teemu Matilainen <teemu.matilainen@iki.fi>)
+" Last Change:	2022 Apr 06
 
 if exists("b:did_indent")
   finish
@@ -12,6 +14,8 @@ let b:did_indent = 1
 setlocal autoindent
 setlocal indentexpr=GetGitoliteIndent()
 setlocal indentkeys=o,O,*<Return>,!^F,=repo,\",=
+
+let b:undo_indent = "setl ai< inde< indk<"
 
 " Only define the function once.
 if exists("*GetGitoliteIndent")
@@ -27,11 +31,13 @@ function! GetGitoliteIndent()
   let cline = getline(v:lnum)
 
   if cline =~ '^\s*\(C\|R\|RW\|RW+\|RWC\|RW+C\|RWD\|RW+D\|RWCD\|RW+CD\|-\)[ \t=]'
-    return &sw
+    return shiftwidth()
   elseif cline =~ '^\s*config\s'
-    return &sw
+    return shiftwidth()
+  elseif cline =~ '^\s*option\s'
+    return shiftwidth()
   elseif pline =~ '^\s*repo\s' && cline =~ '^\s*\(#.*\)\?$'
-    return &sw
+    return shiftwidth()
   elseif cline =~ '^\s*#'
     return indent(prevln)
   elseif cline =~ '^\s*$'

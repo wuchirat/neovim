@@ -1,9 +1,12 @@
 -- Tests for setting the '[,'] marks when joining lines.
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear, feed, insert = helpers.clear, helpers.feed, helpers.insert
-local command, expect = helpers.command, helpers.expect
-local wait = helpers.wait
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup = t.describe, t.it, t.setup
+local clear, feed, insert = n.clear, n.feed, n.insert
+local command, expect = n.command, n.expect
+local poke_eventloop = n.poke_eventloop
 
 describe('autoformat join', function()
   setup(clear)
@@ -21,7 +24,7 @@ Results:]])
 
     feed('gg')
     feed('0gqj<cr>')
-    wait()
+    poke_eventloop()
 
     command([[let a=string(getpos("'[")).'/'.string(getpos("']"))]])
     command("g/^This line/;'}-join")

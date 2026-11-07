@@ -1,55 +1,55 @@
 -- Test for BufWritePre autocommand that deletes or unloads the buffer.
 -- Test for BufUnload autocommand that unloads all other buffers.
 
-local helpers = require('test.functional.helpers')(after_each)
-local feed, source = helpers.feed, helpers.source
-local clear, feed_command, expect, eq, eval = helpers.clear, helpers.feed_command, helpers.expect, helpers.eq, helpers.eval
-local write_file, wait, dedent = helpers.write_file, helpers.wait, helpers.dedent
-local io = require('io')
+local t = require('test.testutil')
+local n = require('test.functional.testnvim')()
+
+local describe, it, before_each, setup, teardown =
+  t.describe, t.it, t.before_each, t.setup, t.teardown
+local source = n.source
+local clear, command, expect, eq, eval = n.clear, n.command, n.expect, t.eq, n.eval
+local write_file, dedent = t.write_file, t.dedent
+local read_file = t.read_file
+local expect_exit = n.expect_exit
 
 describe('autocommands that delete and unload buffers:', function()
+  local test_file = 'Xtest-008_autocommands.out'
   local text1 = dedent([[
     start of Xxx1
       test
     end of Xxx]])
   local text2 = text1:gsub('1', '2')
   setup(function()
-    write_file('Xxx1', text1..'\n')
-    write_file('Xxx2', text2..'\n')
+    write_file('Xxx1', text1 .. '\n')
+    write_file('Xxx2', text2 .. '\n')
   end)
   teardown(function()
-    os.remove('test.out')
+    os.remove(test_file)
     os.remove('Xxx1')
     os.remove('Xxx2')
   end)
   before_each(clear)
 
   it('BufWritePre, BufUnload', function()
-    feed_command('au BufWritePre Xxx1 bunload')
-    feed_command('au BufWritePre Xxx2 bwipe')
-    feed_command('e Xxx2')
+    command('au BufWritePre Xxx1 bunload')
+    command('au BufWritePre Xxx2 bwipe')
+    command('e Xxx2')
     eq('Xxx2', eval('bufname("%")'))
-    feed_command('e Xxx1')
+    command('e Xxx1')
     eq('Xxx1', eval('bufname("%")'))
     -- The legacy test file did not check the error message.
-    feed_command('let v:errmsg = "no error"')
-    feed_command('write')
-    -- Discard all "hit enter" prompts and messages.
-    feed('<C-L>')
-    eq('E203: Autocommands deleted or unloaded buffer to be written',
-      eval('v:errmsg'))
+    command('let v:errmsg = "no error"')
+    command('silent! write')
+    eq('E203: Autocommands deleted or unloaded buffer to be written', eval('v:errmsg'))
     eq('Xxx2', eval('bufname("%")'))
     expect(text2)
     -- Start editing Xxx2.
-    feed_command('e! Xxx2')
+    command('e! Xxx2')
     -- The legacy test file did not check the error message.
-    feed_command('let v:errmsg = "no error"')
+    command('let v:errmsg = "no error"')
     -- Write Xxx2, will delete the buffer and give an error msg.
-    feed_command('w')
-    -- Discard all "hit enter" prompts and messages.
-    feed('<C-L>')
-    eq('E203: Autocommands deleted or unloaded buffer to be written',
-      eval('v:errmsg'))
+    command('silent! write')
+    eq('E203: Autocommands deleted or unloaded buffer to be written', eval('v:errmsg'))
     eq('Xxx1', eval('bufname("%")'))
     expect(text1)
   end)
@@ -65,7 +65,8 @@ describe('autocommands that delete and unload buffers:', function()
 	endwhile
       endfunc
       func WriteToOut()
-	edit! test.out
+	edit! ]] .. test_file .. [[
+
 	$put ='VimLeave done'
 	write
       endfunc
@@ -73,19 +74,14 @@ describe('autocommands that delete and unload buffers:', function()
       au BufUnload * call CloseAll()
       au VimLeave * call WriteToOut()
     ]])
-    feed_command('e Xxx2')
-    -- Discard all "hit enter" prompts and messages.
-    feed('<C-L>')
-    feed_command('e Xxx1')
-    -- Discard all "hit enter" prompts and messages.
-    feed('<C-L>')
-    feed_command('e Makefile') -- an existing file
-    feed('<C-L>')
-    feed_command('sp new2')
-    feed('<C-L>')
-    feed_command('q')
-    wait()
-    eq('VimLeave done',
-       string.match(io.open('test.out', 'r'):read('*all'), "^%s*(.-)%s*$"))
+    -- Must disable 'hidden' so that the BufUnload autocmd is triggered between
+    -- each :edit
+    command('set nohidden')
+    command('silent! edit Xxx2')
+    command('silent! edit Xxx1')
+    command('silent! edit README.md') -- an existing file
+    command('silent! split new2')
+    expect_exit(command, 'silent! quit')
+    eq('VimLeave done', string.match(read_file(test_file), '^%s*(.-)%s*$'))
   end)
 end)

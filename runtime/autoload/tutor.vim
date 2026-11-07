@@ -2,9 +2,6 @@
 
 " Setup: {{{1
 function! tutor#SetupVim()
-    if &columns < 90
-        set columns=90
-    endif
     if !exists('g:did_load_ftplugin') || g:did_load_ftplugin != 1
         filetype plugin on
     endif
@@ -15,9 +12,9 @@ function! tutor#SetupVim()
     endif
 endfunction
 
-" Loads metadata file, if available
+" Load inline metadata
 function! tutor#LoadMetadata()
-    let b:tutor_metadata = json_decode(join(readfile(expand('%').'.json'), "\n"))
+    lua require('nvim.tutor').load_metadata()
 endfunction
 
 " Mappings: {{{1
@@ -32,7 +29,7 @@ function! tutor#MouseDoubleClick()
     if foldclosed(line('.')) > -1
         normal! zo
     else
-        if match(getline('.'), '^#\{1,} ') > -1
+        if match(getline('.'), '^#\{1,} ') > -1 && foldlevel(line('.')) > 0
             silent normal! zc
         else
             call tutor#FollowLink(0)
@@ -80,62 +77,23 @@ function! tutor#TutorFolds()
     endif
 endfunction
 
-function! tutor#InfoText()
-    let l:info_parts = []
-    if exists('b:tutor_infofunc')
-        call add(l:info_parts, eval(b:tutor_infofunc.'()'))
-    endif
-    return join(l:info_parts, " ")
-endfunction
-
-
-" Marks: {{{1
-
-function! tutor#ApplyMarks()
-    hi! link tutorExpect Special
-    if exists('b:tutor_metadata') && has_key(b:tutor_metadata, 'expect')
-        let b:tutor_sign_id = 1
-        for expct in keys(b:tutor_metadata['expect'])
-            let lnum = eval(expct)
-            call matchaddpos('tutorExpect', [lnum])
-            call tutor#CheckLine(lnum)
-        endfor
-    endif
-endfunction
-
-function! tutor#ApplyMarksOnChanged()
-    if exists('b:tutor_metadata') && has_key(b:tutor_metadata, 'expect')
-        let lnum = line('.')
-        if index(keys(b:tutor_metadata['expect']), string(lnum)) > -1
-            call tutor#CheckLine(lnum)
-        endif
-    endif
-endfunction
-
-function! tutor#CheckLine(line)
-    if exists('b:tutor_metadata') && has_key(b:tutor_metadata, 'expect')
-        let bufn = bufnr('%')
-        let ctext = getline(a:line)
-        if b:tutor_metadata['expect'][string(a:line)] == -1 || ctext ==# b:tutor_metadata['expect'][string(a:line)]
-            exe "sign place ".b:tutor_sign_id." line=".a:line." name=tutorok buffer=".bufn
-        else
-            exe "sign place ".b:tutor_sign_id." line=".a:line." name=tutorbad buffer=".bufn
-        endif
-        let b:tutor_sign_id+=1
-    endif
-endfunction
-
 " Tutor Cmd: {{{1
 
 function! s:Locale()
+    " Make sure l:lang exists before returning.
+    let l:lang = 'en_US'
     if exists('v:lang') && v:lang =~ '\a\a'
         let l:lang = v:lang
     elseif $LC_ALL =~ '\a\a'
         let l:lang = $LC_ALL
+    elseif $LC_MESSAGES =~ '\a\a' || $LC_MESSAGES ==# "C"
+      " LC_MESSAGES=C can be used to explicitly ask for English messages while
+      " keeping LANG non-English; don't set l:lang then.
+      if $LC_MESSAGES =~ '\a\a'
+        let l:lang = $LC_MESSAGES
+      endif
     elseif $LANG =~ '\a\a'
         let l:lang = $LANG
-    else
-        let l:lang = 'en_US'
     endif
     return split(l:lang, '_')
 endfunction
@@ -169,15 +127,21 @@ function! s:Sort(a, b)
     return retval
 endfunction
 
-function! s:GlobTutorials(name)
+" returns a list of all tutor files matching the given name
+function! tutor#GlobTutorials(name, locale)
+    let locale = a:locale
+    " pack/*/start/* are not reported in &rtp
+    let rtp = nvim_list_runtime_paths()
+        \ ->map({_, v -> escape(v:lua.vim.fs.normalize(v), ',')})
+        \ ->join(',')
     " search for tutorials:
     " 1. non-localized
-    let l:tutors = s:GlobPath(&rtp, 'tutor/'.a:name.'.tutor')
+    let l:tutors = s:GlobPath(rtp, 'tutor/'.a:name.'.tutor')
     " 2. localized for current locale
-    let l:locale_tutors = s:GlobPath(&rtp, 'tutor/'.s:Locale()[0].'/'.a:name.'.tutor')
+    let l:locale_tutors = s:GlobPath(rtp, 'tutor/'.locale.'/'.a:name.'.tutor')
     " 3. fallback to 'en'
     if len(l:locale_tutors) == 0
-        let l:locale_tutors = s:GlobPath(&rtp, 'tutor/en/'.a:name.'.tutor')
+        let l:locale_tutors = s:GlobPath(rtp, 'tutor/en/'.a:name.'.tutor')
     endif
     call extend(l:tutors, l:locale_tutors)
     return uniq(sort(l:tutors, 's:Sort'), 's:Sort')
@@ -199,7 +163,7 @@ function! tutor#TutorCmd(tutor_name)
         let l:tutor_name = fnamemodify(l:tutor_name, ':r')
     endif
 
-    let l:tutors = s:GlobTutorials(l:tutor_name)
+    let l:tutors = tutor#GlobTutorials(l:tutor_name, s:Locale()[0])
 
     if len(l:tutors) == 0
         echom "No tutorial with that name found"
@@ -220,12 +184,50 @@ function! tutor#TutorCmd(tutor_name)
         let l:to_open = l:tutors[l:tutor_to_open-1]
     endif
 
+    let l:tutor_file_og = l:to_open
+    let l:tutor_file_tmp = tempname() .. '.' .. fnamemodify(l:tutor_file_og, ':t')
+    call filecopy(l:tutor_file_og, l:tutor_file_tmp)
+
     call tutor#SetupVim()
-    exe "edit ".l:to_open
+    exe "drop" fnameescape(l:tutor_file_tmp)
+    let b:tutor_file = l:tutor_file_og
+    call tutor#LoadMetadata()
+    call tutor#EnableInteractive(v:true)
+    call tutor#ApplyTransform()
 endfunction
 
 function! tutor#TutorCmdComplete(lead,line,pos)
-    let l:tutors = s:GlobTutorials('*')
+    let l:tutors = tutor#GlobTutorials('*', s:Locale()[0])
     let l:names = uniq(sort(map(l:tutors, 'fnamemodify(v:val, ":t:r")'), 's:Sort'))
     return join(l:names, "\n")
+endfunction
+
+" Enables/disables interactive mode.
+function! tutor#EnableInteractive(enable)
+    let enable = a:enable
+    if enable
+        setlocal buftype=nowrite
+        setlocal concealcursor+=inv
+        setlocal conceallevel=2
+        lua require('nvim.tutor').apply_marks()
+        augroup tutor_interactive
+            autocmd! TextChanged,TextChangedI <buffer> lua require('nvim.tutor').apply_marks_on_changed()
+        augroup END
+    else
+        setlocal buftype<
+        setlocal concealcursor<
+        setlocal conceallevel<
+        if exists('#tutor_interactive')
+            autocmd! tutor_interactive * <buffer>
+        endif
+    endif
+endfunction
+
+function! tutor#ApplyTransform()
+    if has('win32')
+        sil! %s/{unix:(\(.\{-}\)),win:(\(.\{-}\))}/\2/g
+    else
+        sil! %s/{unix:(\(.\{-}\)),win:(\(.\{-}\))}/\1/g
+    endif
+    normal! gg0
 endfunction

@@ -1,8 +1,11 @@
 *usr_44.txt*	Nvim
 
-		     VIM USER MANUAL - by Bram Moolenaar
 
-			 Your own syntax highlighted
+		     VIM USER MANUAL	by Bram Moolenaar
+
+
+==============================================================================
+Your own syntax highlighted
 
 
 Vim comes with highlighting for a couple of hundred different file types.  If
@@ -511,7 +514,7 @@ syntax file.  The ":syntax include" command reads in a syntax file and stores
 the elements it defined in a syntax cluster.  For Perl, the statements are as
 follows: >
 
-	:syntax include @Pod <sfile>:p:h/pod.vim
+	:syntax include @Pod <script>:p:h/pod.vim
 	:syntax region perlPOD start=/^=head/ end=/^=cut/ contains=@Pod
 
 When "=head" is found in a Perl file, the perlPOD region starts.  In this
@@ -522,7 +525,7 @@ region ends and we go back to the items defined in the Perl file.
 command in the included file.  And an argument such as "contains=ALL" will
 only contain items defined in the included file, not in the file that includes
 it.
-   The "<sfile>:p:h/" part uses the name of the current file (<sfile>),
+   The "<script>:p:h/" part uses the name of the current file (<script>),
 expands it to a full path (:p) and then takes the head (:h).  This results in
 the directory name of the file.  This causes the pod.vim file in the same
 directory to be included.
@@ -627,10 +630,10 @@ be included in the next Vim version!
 
 ADDING TO AN EXISTING SYNTAX FILE
 
-We were assuming you were adding a completely new syntax file.  When an existing
-syntax file works, but is missing some items, you can add items in a separate
-file.  That avoids changing the distributed syntax file, which will be lost
-when installing a new version of Vim.
+We were assuming you were adding a completely new syntax file.  When an
+existing syntax file works, but is missing some items, you can add items in a
+separate file.  That avoids changing the distributed syntax file, which will
+be lost when installing a new version of Vim.
    Write syntax commands in your file, possibly using group names from the
 existing syntax.  For example, to add new variable types to the C syntax file:
 >
@@ -673,20 +676,9 @@ syntax file, earlier in 'runtimepath' was already loaded: >
 	  finish
 	endif
 
-To be compatible with Vim 5.8 use: >
-
-	if version < 600
-	  syntax clear
-	elseif exists("b:current_syntax")
-	  finish
-	endif
-
 Set "b:current_syntax" to the name of the syntax at the end.  Don't forget
 that included files do this too, you might have to reset "b:current_syntax" if
 you include two files.
-
-If you want your syntax file to work with Vim 5.x, add a check for v:version.
-See yacc.vim for an example.
 
 Do not include anything that is a user preference.  Don't set 'tabstop',
 'expandtab', etc.  These belong in a filetype plugin.
@@ -716,4 +708,6 @@ up scrolling backwards and CTRL-L.
 
 Next chapter: |usr_45.txt|  Select your language
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|
+
+vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1,8 +1,11 @@
 *usr_08.txt*	Nvim
 
-		     VIM USER MANUAL - by Bram Moolenaar
 
-			      Splitting windows
+		     VIM USER MANUAL	by Bram Moolenaar
+
+
+==============================================================================
+Splitting windows
 
 
 Display two different files above each other.  Or view two locations in the
@@ -17,7 +20,7 @@ side by side.  All this is possible with split windows.
 |08.6|	Commands for all windows
 |08.7|	Viewing differences with diff mode
 |08.8|	Various
-|08.9|	Tab pages
+|08.9|	Tabpages
 
      Next chapter: |usr_09.txt|  Using the GUI
  Previous chapter: |usr_07.txt|  Editing more than one file
@@ -32,7 +35,7 @@ The easiest way to open a new window is to use the following command: >
 
 This command splits the screen into two windows and leaves the cursor in the
 top one:
-
+>
 	+----------------------------------+
 	|/* file one.c */		   |
 	|~				   |
@@ -43,9 +46,9 @@ top one:
 	|one.c=============================|
 	|				   |
 	+----------------------------------+
-
+<
 What you see here is two windows on the same file.  The line with "====" is
-that status line.  It displays information about the window above it.  (In
+the status line.  It displays information about the window above it.  (In
 practice the status line will be in reverse video.)
    The two windows allow you to view two parts of the same file.  For example,
 you could make the top window show the variable declarations of a program, and
@@ -87,7 +90,7 @@ The following command opens a second window and starts editing the given file:
 	:split two.c
 
 If you were editing one.c, then the result looks like this:
-
+>
 	+----------------------------------+
 	|/* file two.c */		   |
 	|~				   |
@@ -98,7 +101,7 @@ If you were editing one.c, then the result looks like this:
 	|one.c=============================|
 	|				   |
 	+----------------------------------+
-
+<
 To open a window on a new, empty file, use this: >
 
 	:new
@@ -170,7 +173,7 @@ or: >
 	:vsplit two.c
 
 The result looks something like this:
-
+>
 	+--------------------------------------+
 	|/* file two.c */   |/* file one.c */  |
 	|~		    |~		       |
@@ -179,7 +182,7 @@ The result looks something like this:
 	|two.c===============one.c=============|
 	|				       |
 	+--------------------------------------+
-
+<
 Actually, the | lines in the middle will be in reverse video.  This is called
 the vertical separator.  It separates the two windows left and right of it.
 
@@ -218,7 +221,7 @@ cursor keys can also be used, if you like.
 You have split a few windows, but now they are in the wrong place.  Then you
 need a command to move the window somewhere else.  For example, you have three
 windows like this:
-
+>
 	+----------------------------------+
 	|/* file two.c */		   |
 	|~				   |
@@ -233,9 +236,9 @@ windows like this:
 	|one.c=============================|
 	|				   |
 	+----------------------------------+
-
+<
 Clearly the last one should be at the top.  Go to that window (using CTRL-W w)
-and the type this command: >
+and then type this command: >
 
 	CTRL-W K
 
@@ -244,7 +247,7 @@ the very top.  You will notice that K is again used for moving upwards.
    When you have vertical splits, CTRL-W K will move the current window to the
 top and make it occupy the full width of the Vim window.  If this is your
 layout:
-
+>
 	+-------------------------------------------+
 	|/* two.c */  |/* three.c */  |/* one.c */  |
 	|~	      |~	      |~	    |
@@ -255,9 +258,9 @@ layout:
 	|two.c=========three.c=========one.c========|
 	|					    |
 	+-------------------------------------------+
-
+<
 Then using CTRL-W K in the middle window (three.c) will result in:
-
+>
 	+-------------------------------------------+
 	|/* three.c */				    |
 	|~					    |
@@ -268,7 +271,7 @@ Then using CTRL-W K in the middle window (three.c) will result in:
 	|two.c==================one.c===============|
 	|					    |
 	+-------------------------------------------+
-
+<
 The other three similar commands (you can probably guess these now):
 
 	CTRL-W H	move window to the far left
@@ -316,7 +319,7 @@ To make Vim open a window for each file, start it with the "-o" argument: >
 	vim -o one.txt two.txt three.txt
 
 This results in:
-
+>
 	+-------------------------------+
 	|file one.txt			|
 	|~				|
@@ -329,7 +332,7 @@ This results in:
 	|three.txt======================|
 	|				|
 	+-------------------------------+
-
+<
 The "-O" argument is used to get vertically split windows.
    When Vim is already running, the ":all" command opens a window for each
 file in the argument list.  ":vertical all" does it with vertical splits.
@@ -347,7 +350,7 @@ Type this command in a shell to start Nvim in diff mode: >
 
 Vim will start, with two windows side by side.  You will only see the line
 in which you added characters, and a few lines above and below it.
-
+>
 	 VV		      VV
 	+-----------------------------------------+
 	|+ +--123 lines: /* a|+ +--123 lines: /* a|  <- fold
@@ -366,7 +369,7 @@ in which you added characters, and a few lines above and below it.
 	|main.c~==============main.c==============|
 	|					  |
 	+-----------------------------------------+
-
+<
 (This picture doesn't show the highlighting, use "nvim -d" for that.)
 
 The lines that were not modified have been collapsed into one line.  This is
@@ -401,7 +404,7 @@ Another way to start in diff mode can be done from inside Vim.  Edit the
 "main.c" file, then make a split and show the differences: >
 
 	:edit main.c
-	:vertical diffsplit main.c~ 
+	:vertical diffsplit main.c~
 
 The ":vertical" command is used to make the window split vertically.  If you
 omit this, you will get a horizontal split.
@@ -441,7 +444,8 @@ To go the other way use: >
 
 	[c
 
-Prepended a count to jump further away.
+Prepend a count to jump further away. Thus "4]c" jumps to the fourth next
+change, and "3[c" jumps to the third previous change.
 
 
 REMOVING CHANGES
@@ -482,6 +486,8 @@ statusline:
 	0	never
 	1	only when there are split windows (the default)
 	2	always
+	3	have a global statusline at the bottom instead of one for each
+		window
 
 Many commands that edit another file have a variant that splits the window.
 For Command-line commands this is done by prepending an "s".  For example:
@@ -506,18 +512,18 @@ window is to appear:
 
 
 ==============================================================================
-*08.9*	Tab pages
+*08.9*	Tabpages
 
 You will have noticed that windows never overlap.  That means you quickly run
-out of screen space.  The solution for this is called Tab pages.
+out of screen space.  The solution for this is called Tabpages.
 
-Assume you are editing "thisfile".  To create a new tab page use this command: >
+Assume you are editing "thisfile".  To create a new tabpage use this command: >
 
 	:tabedit thatfile
 
 This will edit the file "thatfile" in a window that occupies the whole Vim
 window.  And you will notice a bar at the top with the two file names:
-
+>
 	+----------------------------------+
 	| thisfile | /thatfile/ __________X|    (thatfile is bold)
 	|/* thatfile */			   |
@@ -528,13 +534,13 @@ window.  And you will notice a bar at the top with the two file names:
 	|~				   |
 	|				   |
 	+----------------------------------+
-
-You now have two tab pages.  The first one has a window for "thisfile" and the
+<
+You now have two tabpages.  The first one has a window for "thisfile" and the
 second one a window for "thatfile".  It's like two pages that are on top of
 each other, with a tab sticking out of each page showing the file name.
 
 Now use the mouse to click on "thisfile" in the top line.  The result is
-
+>
 	+----------------------------------+
 	| /thisfile/ | thatfile __________X|    (thisfile is bold)
 	|/* thisfile */			   |
@@ -545,18 +551,18 @@ Now use the mouse to click on "thisfile" in the top line.  The result is
 	|~				   |
 	|				   |
 	+----------------------------------+
-
-Thus you can switch between tab pages by clicking on the label in the top
+<
+Thus you can switch between tabpages by clicking on the label in the top
 line.  If you don't have a mouse or don't want to use it, you can use the "gt"
 command.  Mnemonic: Goto Tab.
 
-Now let's create another tab page with the command: >
+Now let's create another tabpage with the command: >
 
 	:tab split
 
-This makes a new tab page with one window that is editing the same buffer as
+This makes a new tabpage with one window that is editing the same buffer as
 the window we were in:
-
+>
 	+-------------------------------------+
 	| thisfile | /thisfile/ | thatfile __X|   (thisfile is bold)
 	|/* thisfile */			      |
@@ -567,34 +573,36 @@ the window we were in:
 	|~				      |
 	|				      |
 	+-------------------------------------+
-
+<
 You can put ":tab" before any Ex command that opens a window.  The window will
-be opened in a new tab page.  Another example: >
+be opened in a new tabpage.  Another example: >
 
 	:tab help gt
 
-Will show the help text for "gt" in a new tab page.
+Will show the help text for "gt" in a new tabpage.
 
-A few more things you can do with tab pages:
+A few more things you can do with tabpages:
 
 - click with the mouse in the space after the last label
-	The next tab page will be selected, like with "gt".
+	The next tabpage will be selected, like with "gt".
 
 - click with the mouse on the "X" in the top right corner
-	The current tab page will be closed.  Unless there are unsaved
-	changes in the current tab page.
+	The current tabpage will be closed.  Unless there are unsaved
+	changes in the current tabpage.
 
 - double click with the mouse in the top line
-	A new tab page will be created.
+	A new tabpage will be created.
 
 - the "tabonly" command
-	Closes all tab pages except the current one.  Unless there are unsaved
-	changes in other tab pages.
+	Closes all tabpages except the current one.  Unless there are unsaved
+	changes in other tabpages.
 
-For more information about tab pages see |tab-page|.
+For more information about tabpages see |tabpage|.
 
 ==============================================================================
 
 Next chapter: |usr_09.txt|  Using the GUI
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|
+
+vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1,18 +1,13 @@
-// This is an open source non-commercial project. Dear PVS-Studio, please check
-// it. PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <uv.h>
-#ifdef _WIN32
+#ifdef MSWIN
 # include <windows.h>
 #else
 # include <unistd.h>
 #endif
 
-// -V:STRUCT_CAST:641
-#define STRUCT_CAST(Type, obj) ((Type *)(obj))
 #define is_terminal(stream) (uv_guess_handle(fileno(stream)) == UV_TTY)
 #define BUF_SIZE 0xfff
 #define CTRL_C 0x03
@@ -20,9 +15,10 @@
 uv_tty_t tty;
 uv_tty_t tty_out;
 
+bool owns_tty(void);  // silence -Wmissing-prototypes
 bool owns_tty(void)
 {
-#ifdef _WIN32
+#ifdef MSWIN
   // XXX: We need to make proper detect owns tty
   // HWND consoleWnd = GetConsoleWindow();
   // DWORD dwProcessId;
@@ -37,10 +33,14 @@ bool owns_tty(void)
 static void walk_cb(uv_handle_t *handle, void *arg)
 {
   if (!uv_is_closing(handle)) {
+#ifdef MSWIN
+    uv_tty_set_mode(&tty, UV_TTY_MODE_NORMAL);
+#endif
     uv_close(handle, NULL);
   }
 }
 
+#ifndef MSWIN
 static void sig_handler(int signum)
 {
   switch (signum) {
@@ -57,8 +57,9 @@ static void sig_handler(int signum)
     return;
   }
 }
+#endif
 
-#ifdef WIN32
+#ifdef MSWIN
 static void sigwinch_cb(uv_signal_t *handle, int signum)
 {
   int width, height;
@@ -94,11 +95,18 @@ static void read_cb(uv_stream_t *stream, ssize_t cnt, const uv_buf_t *buf)
   uv_tty_init(&write_loop, &out, fileno(stdout), 0);
 
   uv_write_t req;
-  uv_buf_t b = {.base = buf->base, .len = (size_t)cnt};
-  uv_write(&req, STRUCT_CAST(uv_stream_t, &out), &b, 1, NULL);
+  uv_buf_t b = {
+    .base = buf->base,
+#ifdef MSWIN
+    .len = (ULONG)cnt
+#else
+    .len = (size_t)cnt
+#endif
+  };
+  uv_write(&req, (uv_stream_t *)&out, &b, 1, NULL);
   uv_run(&write_loop, UV_RUN_DEFAULT);
 
-  uv_close(STRUCT_CAST(uv_handle_t, &out), NULL);
+  uv_close((uv_handle_t *)&out, NULL);
   uv_run(&write_loop, UV_RUN_DEFAULT);
   if (uv_loop_close(&write_loop)) {
     abort();
@@ -141,7 +149,12 @@ int main(int argc, char **argv)
   }
 
   if (argc > 1) {
-    int count = atoi(argv[1]);
+    errno = 0;
+    int count = (int)strtol(argv[1], NULL, 10);
+    if (errno != 0) {
+      abort();
+    }
+    count = (count < 0 || count > 99999) ? 0 : count;
     for (int i = 0; i < count; i++) {
       printf("line%d\n", i);
     }
@@ -153,7 +166,7 @@ int main(int argc, char **argv)
   uv_prepare_t prepare;
   uv_prepare_init(uv_default_loop(), &prepare);
   uv_prepare_start(&prepare, prepare_cb);
-#ifndef WIN32
+#ifndef MSWIN
   uv_tty_init(uv_default_loop(), &tty, fileno(stderr), 1);
 #else
   uv_tty_init(uv_default_loop(), &tty, fileno(stdin), 1);
@@ -162,9 +175,20 @@ int main(int argc, char **argv)
   uv_tty_get_winsize(&tty_out, &width, &height);
 #endif
   uv_tty_set_mode(&tty, UV_TTY_MODE_RAW);
+#ifdef MSWIN
+  DWORD dwMode;
+  if (GetConsoleMode(tty.handle, &dwMode)) {
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_INPUT;
+    SetConsoleMode(tty.handle, dwMode);
+  }
+  if (GetConsoleMode(tty_out.handle, &dwMode)) {
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(tty_out.handle, dwMode);
+  }
+#endif
   tty.data = &interrupted;
-  uv_read_start(STRUCT_CAST(uv_stream_t, &tty), alloc_cb, read_cb);
-#ifndef WIN32
+  uv_read_start((uv_stream_t *)&tty, alloc_cb, read_cb);
+#ifndef MSWIN
   struct sigaction sa;
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = 0;
@@ -178,7 +202,7 @@ int main(int argc, char **argv)
 #endif
   uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 
-#ifndef WIN32
+#ifndef MSWIN
   // XXX: Without this the SIGHUP handler is skipped on some systems.
   sleep(100);
 #endif

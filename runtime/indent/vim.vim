@@ -1,7 +1,8 @@
 " Vim indent file
 " Language:	Vim script
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2016 Jun 27
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -10,7 +11,9 @@ endif
 let b:did_indent = 1
 
 setlocal indentexpr=GetVimIndent()
-setlocal indentkeys+==end,=else,=cat,=fina,=END,0\\
+setlocal indentkeys+==endif,=enddef,=endfu,=endfor,=endwh,=endtry,=},=else,=cat,=finall,=END,0\\,0=\"\\\ 
+setlocal indentkeys-=0#
+setlocal indentkeys-=:
 
 let b:undo_indent = "setl indentkeys< indentexpr<"
 
@@ -31,15 +34,29 @@ function GetVimIndent()
   endtry
 endfunc
 
+" Legacy script line continuation and Vim9 script operators that must mean an
+" expression that continues from the previous line.
+let s:lineContPat = '^\s*\(\\\|"\\ \|->\)'
+
 function GetVimIndentIntern()
+  " If the current line has line continuation and the previous one too, use
+  " the same indent.  This does not skip empty lines.
+  let cur_text = getline(v:lnum)
+  let cur_has_linecont = cur_text =~ s:lineContPat
+  if cur_has_linecont && v:lnum > 1 && getline(v:lnum - 1) =~ s:lineContPat
+    return indent(v:lnum - 1)
+  endif
+
   " Find a non-blank line above the current line.
   let lnum = prevnonblank(v:lnum - 1)
 
-  " If the current line doesn't start with '\' and below a line that starts
-  " with '\', use the indent of the line above it.
-  let cur_text = getline(v:lnum)
-  if cur_text !~ '^\s*\\'
-    while lnum > 0 && getline(lnum) =~ '^\s*\\'
+  " The previous line, ignoring line continuation
+  let prev_text_end = lnum > 0 ? getline(lnum) : ''
+
+  " If the current line doesn't start with '\' or '"\ ' and below a line that
+  " starts with '\' or '"\ ', use the indent of the line above it.
+  if !cur_has_linecont
+    while lnum > 0 && getline(lnum) =~ s:lineContPat
       let lnum = lnum - 1
     endwhile
   endif
@@ -48,13 +65,43 @@ function GetVimIndentIntern()
   if lnum == 0
     return 0
   endif
+
+  " the start of the previous line, skipping over line continuation
   let prev_text = getline(lnum)
+  let found_cont = 0
 
   " Add a 'shiftwidth' after :if, :while, :try, :catch, :finally, :function
-  " and :else.  Add it three times for a line that starts with '\' after
-  " a line that doesn't (or g:vim_indent_cont if it exists).
+  " and :else.  Add it three times for a line that starts with '\' or '"\ '
+  " after a line that doesn't (or g:vim_indent_cont if it exists).
   let ind = indent(lnum)
-  if cur_text =~ '^\s*\\' && v:lnum > 1 && prev_text !~ '^\s*\\'
+
+  " In heredoc indenting works completely differently.
+  if has('syntax_items') 
+    let syn_here = synIDattr(synID(v:lnum, 1, 1), "name")
+    if syn_here =~ 'vimLetHereDocStop'
+      " End of heredoc: use indent of matching start line
+      let lnum = v:lnum - 1
+      while lnum > 0
+	let attr = synIDattr(synID(lnum, 1, 1), "name")
+	if attr != '' && attr !~ 'vimLetHereDoc'
+	  return indent(lnum)
+	endif
+	let lnum -= 1
+      endwhile
+      return 0
+    endif
+    if syn_here =~ 'vimLetHereDoc'
+      if synIDattr(synID(lnum, 1, 1), "name") !~ 'vimLetHereDoc'
+	" First line in heredoc: increase indent
+	return ind + shiftwidth()
+      endif
+      " Heredoc continues: no change in indent
+      return ind
+    endif
+  endif
+
+  if cur_text =~ s:lineContPat && v:lnum > 1 && prev_text !~ s:lineContPat
+    let found_cont = 1
     if exists("g:vim_indent_cont")
       let ind = ind + g:vim_indent_cont
     else
@@ -64,12 +111,15 @@ function GetVimIndentIntern()
     let ind = ind + shiftwidth()
   else
     " A line starting with :au does not increment/decrement indent.
-    if prev_text !~ '^\s*au\%[tocmd]'
-      let i = match(prev_text, '\(^\||\)\s*\(if\|wh\%[ile]\|for\|try\|cat\%[ch]\|fina\%[lly]\|fu\%[nction]\|el\%[seif]\)\>')
+    " A { may start a block or a dict.  Assume that when a } follows it's a
+    " terminated dict.
+    " ":function" starts a block but "function(" doesn't.
+    if prev_text !~ '^\s*au\%[tocmd]' && prev_text !~ '^\s*{.*}'
+      let i = match(prev_text, '\(^\||\)\s*\(export\s\+\)\?\({\|\(if\|wh\%[ile]\|for\|try\|cat\%[ch]\|fina\|finall\%[y]\|def\|el\%[seif]\)\>\|fu\%[nction][! ]\)')
       if i >= 0
-	let ind += shiftwidth()
+        let ind += shiftwidth()
 	if strpart(prev_text, i, 1) == '|' && has('syntax_items')
-	      \ && synIDattr(synID(lnum, i, 1), "name") =~ '\(Comment\|String\)$'
+	      \ && synIDattr(synID(lnum, i, 1), "name") =~ '\(Comment\|String\|PatSep\)$'
 	  let ind -= shiftwidth()
 	endif
       endif
@@ -86,11 +136,74 @@ function GetVimIndentIntern()
     endif
   endif
 
+  " For a line starting with "}" find the matching "{".  Align with that line,
+  " it is either the matching block start or dictionary start.
+  " Use the mapped "%" from matchit to find the match, otherwise we may match
+  " a { inside a comment or string.
+  if cur_text =~ '^\s*}'
+    if maparg('%') != ''
+      exe v:lnum
+      silent! normal %
+      if line('.') < v:lnum
+	let ind = indent('.')
+      endif
+    else
+      " todo: use searchpair() to find a match
+    endif
+  endif
 
-  " Subtract a 'shiftwidth' on a :endif, :endwhile, :catch, :finally, :endtry,
-  " :endfun, :else and :augroup END.
-  if cur_text =~ '^\s*\(ene\@!\|cat\|fina\|el\|aug\%[roup]\s\+[eE][nN][dD]\)'
+  " Look back for a line to align with
+  while lnum > 1
+    " Below a line starting with "}" find the matching "{".
+    if prev_text =~ '^\s*}'
+      if maparg('%') != ''
+	exe lnum
+	silent! normal %
+	if line('.') < lnum
+	  let lnum = line('.')
+	  let ind = indent(lnum)
+	  let prev_text = getline(lnum)
+	else
+	  break
+	endif
+      else
+	" todo: use searchpair() to find a match
+	break
+      endif
+    elseif prev_text =~ s:lineContPat
+      " looks like a continuation like, go back one line
+      let lnum = lnum - 1
+      let ind = indent(lnum)
+      let prev_text = getline(lnum)
+    else
+      break
+    endif
+  endwhile
+
+  " Below a line starting with "]" we must be below the end of a list.
+  " Include a "}" and "},} in case a dictionary ends too.
+  if prev_text_end =~ '^\s*\(},\=\s*\)\=]'
     let ind = ind - shiftwidth()
+  endif
+
+  let ends_in_comment = has('syntax_items')
+	\ && synIDattr(synID(lnum, len(getline(lnum)), 1), "name") =~ '\(Comment\|String\)$'
+
+  " A line ending in "{" or "[" is most likely the start of a dict/list literal,
+  " indent the next line more.  Not for a continuation line or {{{.
+  if !ends_in_comment && prev_text_end =~ '\s[{[]\s*$' && !found_cont
+    let ind = ind + shiftwidth()
+  endif
+
+  " Subtract a 'shiftwidth' on a :endif, :endwhile, :endfor, :catch, :finally,
+  " :endtry, :endfun, :enddef, :else and :augroup END.
+  " Although ":en" would be enough only match short command names as in
+  " 'indentkeys'.
+  if cur_text =~ '^\s*\(endif\|endwh\|endfor\|endtry\|endfu\|enddef\|cat\|finall\|else\|aug\%[roup]\s\+[eE][nN][dD]\)'
+    let ind = ind - shiftwidth()
+    if ind < 0
+      let ind = 0
+    endif
   endif
 
   return ind

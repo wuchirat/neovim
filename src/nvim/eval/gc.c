@@ -1,14 +1,10 @@
-// This is an open source non-commercial project. Dear PVS-Studio, please check
-// it. PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+#include <stddef.h>
 
-#include "nvim/eval/typval.h"
 #include "nvim/eval/gc.h"
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "eval/gc.c.generated.h"
-#endif
+#include "eval/gc.c.generated.h"  // IWYU pragma: export
 
 /// Head of list of all dictionaries
-dict_T *gc_first_dict = NULL;
+DLLEXPORT dict_T *gc_first_dict = NULL;
 /// Head of list of all lists
-list_T *gc_first_list = NULL;
+DLLEXPORT list_T *gc_first_list = NULL;

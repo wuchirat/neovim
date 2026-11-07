@@ -1,10 +1,13 @@
-#ifndef NVIM_MEMORY_H
-#define NVIM_MEMORY_H
+#pragma once
 
-#include <stdbool.h>  // for bool
-#include <stdint.h>  // for uint8_t
-#include <stddef.h>  // for size_t
-#include <time.h>  // for time_t
+#include <stdbool.h>
+#include <stdint.h>  // IWYU pragma: keep
+#include <string.h>
+#include <time.h>  // IWYU pragma: keep
+
+#include "auto/config.h"
+#include "nvim/macros_defs.h"
+#include "nvim/memory_defs.h"  // IWYU pragma: keep
 
 /// `malloc()` function signature
 typedef void *(*MemMalloc)(size_t);
@@ -37,7 +40,36 @@ extern MemRealloc mem_realloc;
 extern bool entered_free_all_mem;
 #endif
 
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "memory.h.generated.h"
+typedef void *(*MergeSortGetFunc)(void *);
+typedef void (*MergeSortSetFunc)(void *, void *);
+typedef int (*MergeSortCompareFunc)(const void *, const void *);
+
+EXTERN size_t arena_alloc_count INIT( = 0);
+
+#define kv_fixsize_arena(a, v, s) \
+  ((v).capacity = (s), \
+   (v).items = (void *)arena_alloc(a, sizeof((v).items[0]) * (v).capacity, true))
+
+#include "memory.h.generated.h"
+
+#define XFREE_CLEAR(ptr) \
+  do { \
+    /* Take the address to avoid double evaluation. #1375 */ \
+    void **ptr_ = (void **)&(ptr); \
+    xfree(*ptr_); \
+    /* coverity[dead-store] */ \
+    *ptr_ = NULL; \
+    (void)(*ptr_); \
+  } while (0)
+
+#define CLEAR_FIELD(field)  memset(&(field), 0, sizeof(field))
+#define CLEAR_POINTER(ptr)  memset((ptr), 0, sizeof(*(ptr)))
+
+#ifndef HAVE_STRNLEN
+# define strnlen xstrnlen  // Older versions of SunOS may not have strnlen
 #endif
-#endif  // NVIM_MEMORY_H
+
+#define STRCPY(d, s)        strcpy((char *)(d), (char *)(s))  // NOLINT(runtime/printf)
+
+// Like strcpy() but allows overlapped source and destination.
+#define STRMOVE(d, s)       memmove((d), (s), strlen(s) + 1)

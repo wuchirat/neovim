@@ -3,9 +3,12 @@
 --
 -- Same as legacy test 93 but using UTF-8 file encoding.
 
-local helpers = require('test.functional.helpers')(after_each)
-local feed, insert = helpers.feed, helpers.insert
-local clear, feed_command, expect = helpers.clear, helpers.feed_command, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup, teardown = t.describe, t.it, t.setup, t.teardown
+local feed, insert = n.feed, n.insert
+local clear, feed_command, expect = n.clear, n.feed_command, n.expect
 
 describe('store cursor position in session file in UTF-8', function()
   setup(clear)
@@ -15,6 +18,7 @@ describe('store cursor position in session file in UTF-8', function()
     os.remove('test.out')
   end)
 
+  -- luacheck: ignore 621 (Indentation)
   it('is working', function()
     insert([[
       start:

@@ -114,7 +114,7 @@ function! s:RegistrationCommands(host) abort
   let host_id = a:host.'-registration-clone'
   call remote#host#RegisterClone(host_id, a:host)
   let pattern = s:plugin_patterns[a:host]
-  let paths = globpath(&rtp, 'rplugin/'.a:host.'/'.pattern, 0, 1)
+  let paths = nvim_get_runtime_file('rplugin/'.a:host.'/'.pattern, 1)
   let paths = map(paths, 'tr(resolve(v:val),"\\","/")') " Normalize slashes #4795
   let paths = uniq(sort(paths))
   if empty(paths)
@@ -147,7 +147,7 @@ function! s:RegistrationCommands(host) abort
         \ a:host, string(map(registered, "fnamemodify(v:val, ':t')")))
 
   " Delete the temporary host clone
-  call rpcstop(s:hosts[host_id].channel)
+  call jobstop(s:hosts[host_id].channel)
   call remove(s:hosts, host_id)
   call remove(s:plugins_for_host, host_id)
   return lines
@@ -190,12 +190,18 @@ endfunction
 
 " Registration of standard hosts
 
-" Python/Python3
-call remote#host#Register('python', '*',
-      \ function('provider#pythonx#Require'))
+" Python3
 call remote#host#Register('python3', '*',
-      \ function('provider#pythonx#Require'))
+      \ function('provider#python3#Require'))
 
 " Ruby
 call remote#host#Register('ruby', '*.rb',
       \ function('provider#ruby#Require'))
+
+" nodejs
+call remote#host#Register('node', '*',
+      \ function('provider#node#Require'))
+
+" perl
+call remote#host#Register('perl', '*',
+      \ function('provider#perl#Require'))

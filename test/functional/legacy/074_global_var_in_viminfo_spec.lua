@@ -1,10 +1,11 @@
 -- Tests for storing global variables in the .shada file
 
-local helpers = require('test.functional.helpers')(after_each)
-local lfs = require('lfs')
-local clear, command, eq, neq, eval, wait, spawn =
-  helpers.clear, helpers.command, helpers.eq, helpers.neq, helpers.eval,
-  helpers.wait, helpers.spawn
+local t = require('test.testutil')
+local n = require('test.functional.testnvim')()
+
+local describe, it, setup, teardown = t.describe, t.it, t.setup, t.teardown
+local clear, command, eq, neq, eval, poke_eventloop =
+  n.clear, n.command, t.eq, t.neq, n.eval, n.poke_eventloop
 
 describe('storing global variables in ShaDa files', function()
   local tempname = 'Xtest-functional-legacy-074'
@@ -14,21 +15,115 @@ describe('storing global variables in ShaDa files', function()
   end)
 
   it('is working', function()
-    local nvim2 = spawn({helpers.nvim_prog, '-u', 'NONE',
-                                 '-i', 'Xviminfo', '--embed'})
-    helpers.set_session(nvim2)
+    clear { args_rm = { '-i' }, args = { '-i', 'Xviminfo' } }
 
-    local test_dict = {foo = 1, bar = 0, longvarible = 1000}
-    local test_list = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-      17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
-      35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
-      53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
-      71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88,
-      89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100}
+    local test_dict = { foo = 1, bar = 0, longvarible = 1000 }
+    local test_list = {
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+    }
 
     command('set visualbell')
     command('set shada+=!')
-    command('let MY_GLOBAL_DICT={\'foo\': 1, \'bar\': 0, \'longvarible\': 1000}')
+    command("let MY_GLOBAL_DICT={'foo': 1, 'bar': 0, 'longvarible': 1000}")
     -- Store a really long list. Initially this was testing line wrapping in
     -- viminfo, but shada files has no line wrapping, no matter how long the
     -- list is.
@@ -38,10 +133,10 @@ describe('storing global variables in ShaDa files', function()
     eq(test_list, eval('MY_GLOBAL_LIST'))
 
     command('wsh! ' .. tempname)
-    wait()
+    poke_eventloop()
 
     -- Assert that the shada file exists.
-    neq(nil, lfs.attributes(tempname))
+    neq(nil, vim.uv.fs_stat(tempname))
     command('unlet MY_GLOBAL_DICT')
     command('unlet MY_GLOBAL_LIST')
     -- Assert that the variables where deleted.
@@ -56,5 +151,7 @@ describe('storing global variables in ShaDa files', function()
 
   teardown(function()
     os.remove(tempname)
+    command('set shadafile=NONE')
+    os.remove('Xviminfo')
   end)
 end)

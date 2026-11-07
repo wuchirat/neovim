@@ -1,8 +1,11 @@
 -- Tests for regexp with various magic settings.
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear, feed, insert = helpers.clear, helpers.feed, helpers.insert
-local feed_command, expect = helpers.feed_command, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup = t.describe, t.it, t.setup
+local clear, feed, insert = n.clear, n.feed, n.insert
+local feed_command, expect = n.feed_command, n.expect
 
 describe('regexp with magic settings', function()
   setup(clear)
@@ -34,7 +37,8 @@ describe('regexp with magic settings', function()
     feed('x:$<cr>')
     feed_command('set undolevels=100')
     feed('dv?bar?<cr>')
-    feed('Yup:<cr>')
+    -- Nvim: "k" after "u": undo restores the cursor to where "dv?bar?" started (the last line).
+    feed('Yukp:<cr>')
     feed_command('?^1?,$yank A')
 
     -- Put @a and clean empty line

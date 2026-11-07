@@ -1,8 +1,11 @@
 -- Test for visual mode not being reset causing E315 error.
 
-local helpers = require('test.functional.helpers')(after_each)
-local feed, source = helpers.feed, helpers.source
-local clear, expect = helpers.clear, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup = t.describe, t.it, t.setup
+local feed, source = n.feed, n.source
+local clear, expect = n.clear, n.expect
 
 describe('E315 error', function()
   setup(clear)
@@ -32,7 +35,7 @@ describe('E315 error', function()
     -- :del the ex-way will require the colon operator which resets the
     -- visual mode thus preventing the problem:
     feed('GV:call TriggerTheProblem()<cr>')
-  
+
     source([[
       %del _
       call append(line('$'), g:msg)
@@ -41,7 +44,7 @@ describe('E315 error', function()
 
     -- Assert buffer contents.
     expect([[
-      
+
       Everything's fine.]])
   end)
 end)

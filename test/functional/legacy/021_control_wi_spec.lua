@@ -1,8 +1,11 @@
 -- Tests for [ CTRL-I with a count and CTRL-W CTRL-I with a count
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear, feed, insert = helpers.clear, helpers.feed, helpers.insert
-local feed_command, expect = helpers.feed_command, helpers.expect
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
+
+local describe, it, setup = t.describe, t.it, t.setup
+local clear, feed, insert = n.clear, n.feed, n.insert
+local feed_command, expect = n.feed_command, n.expect
 
 describe('CTRL-W CTRL-I', function()
   setup(clear)
@@ -18,7 +21,7 @@ describe('CTRL-W CTRL-I', function()
       start found wrong line
       test text]])
 
-    -- Search for the second occurence of start and append to register
+    -- Search for the second occurrence of start and append to register
     feed_command('/start')
     feed('2[<C-i>')
     feed_command('yank A')

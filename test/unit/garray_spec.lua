@@ -1,13 +1,14 @@
-local helpers = require("test.unit.helpers")(after_each)
-local itp = helpers.gen_itp(it)
+local t = require('test.unit.testutil')
+local describe = t.describe
+local itp = t.gen_itp(t.it)
 
-local cimport = helpers.cimport
-local internalize = helpers.internalize
-local eq = helpers.eq
-local neq = helpers.neq
-local ffi = helpers.ffi
-local to_cstr = helpers.to_cstr
-local NULL = helpers.NULL
+local cimport = t.cimport
+local internalize = t.internalize
+local eq = t.eq
+local neq = t.neq
+local ffi = t.ffi
+local to_cstr = t.to_cstr
+local NULL = t.NULL
 
 local garray = cimport('./src/nvim/garray.h')
 
@@ -18,7 +19,7 @@ local growsize = 95
 -- constructing a class wrapper around garray. It could for example associate
 -- ga_clear_strings to the underlying garray cdata if the garray is a string
 -- array. But for now I estimate that that kind of magic might make testing
--- less "transparant" (i.e.: the interface would become quite different as to
+-- less "transparent" (i.e.: the interface would become quite different as to
 -- how one would use it from C.
 
 -- accessors
@@ -47,7 +48,7 @@ local ga_size = function(garr)
   return ga_len(garr) * ga_itemsize(garr)
 end
 
-local ga_maxsize = function(garr)  -- luacheck: ignore
+local ga_maxsize = function(garr) -- luacheck: ignore
   return ga_maxlen(garr) * ga_itemsize(garr)
 end
 
@@ -73,7 +74,7 @@ local ga_clear = function(garr)
 end
 
 local ga_clear_strings = function(garr)
-  assert.is_true(ga_itemsize(garr) == ffi.sizeof('char *'))
+  t.ok(ga_itemsize(garr) == ffi.sizeof('char *'))
   return garray.ga_clear_strings(garr)
 end
 
@@ -93,12 +94,8 @@ local ga_append = function(garr, b)
   end
 end
 
-local ga_concat_strings = function(garr)
-  return internalize(garray.ga_concat_strings(garr))
-end
-
-local ga_concat_strings_sep = function(garr, sep)
-  return internalize(garray.ga_concat_strings_sep(garr, to_cstr(sep)))
+local ga_concat_strings = function(garr, sep)
+  return internalize(garray.ga_concat_strings(garr, to_cstr(sep)))
 end
 
 local ga_remove_duplicate_strings = function(garr)
@@ -107,7 +104,7 @@ end
 
 -- derived manipulators
 local ga_set_len = function(garr, len)
-  assert.is_true(len <= ga_maxlen(garr))
+  t.ok(len <= ga_maxlen(garr))
   garr[0].ga_len = len
 end
 
@@ -118,7 +115,7 @@ end
 -- custom append functions
 -- not the C ga_append, which only works for bytes
 local ga_append_int = function(garr, it)
-  assert.is_true(ga_itemsize(garr) == ffi.sizeof('int'))
+  t.ok(ga_itemsize(garr) == ffi.sizeof('int'))
   ga_grow(garr, 1)
   local data = ga_data_as_ints(garr)
   data[ga_len(garr)] = it
@@ -126,7 +123,7 @@ local ga_append_int = function(garr, it)
 end
 
 local ga_append_string = function(garr, it)
-  assert.is_true(ga_itemsize(garr) == ffi.sizeof('char *'))
+  t.ok(ga_itemsize(garr) == ffi.sizeof('char *'))
   -- make a non-garbage collected string and copy the lua string into it,
   -- TODO(aktau): we should probably call xmalloc here, though as long as
   -- xmalloc is based on malloc it should work.
@@ -157,7 +154,9 @@ local ga_append_ints = function(garr, ...)
 end
 
 -- enhanced constructors
-local garray_ctype = function(...) return ffi.typeof('garray_T[1]')(...) end
+local garray_ctype = function(...)
+  return ffi.typeof('garray_T[1]')(...)
+end
 local new_garray = function()
   local garr = garray_ctype()
   return ffi.gc(garr, ga_clear)
@@ -165,7 +164,7 @@ end
 
 local new_string_garray = function()
   local garr = garray_ctype()
-  ga_init(garr, ffi.sizeof("unsigned char *"), 1)
+  ga_init(garr, ffi.sizeof('unsigned char *'), 1)
   return ffi.gc(garr, ga_clear_strings)
 end
 
@@ -182,7 +181,6 @@ local ga_scramble = function(garr)
 end
 
 describe('garray', function()
-
   describe('ga_init', function()
     itp('initializes the values of the garray', function()
       local garr = new_garray()
@@ -199,9 +197,9 @@ describe('garray', function()
     local function new_and_grow(itemsize_, growsize_, req)
       local garr = new_garray()
       ga_init(garr, itemsize_, growsize_)
-      eq(0, ga_size(garr))         -- should be 0 at first
-      eq(NULL, ga_data(garr))      -- should be NULL
-      ga_grow(garr, req)           -- add space for `req` items
+      eq(0, ga_size(garr)) -- should be 0 at first
+      eq(NULL, ga_data(garr)) -- should be NULL
+      ga_grow(garr, req) -- add space for `req` items
       return garr
     end
 
@@ -210,8 +208,8 @@ describe('garray', function()
       growsize = 4
       local grow_by = growsize - 1
       local garr = new_and_grow(itemsize, growsize, grow_by)
-      neq(NULL, ga_data(garr))       -- data should be a ptr to memory
-      eq(growsize, ga_maxlen(garr))  -- we requested LESS than growsize, so...
+      neq(NULL, ga_data(garr)) -- data should be a ptr to memory
+      eq(growsize, ga_maxlen(garr)) -- we requested LESS than growsize, so...
     end)
 
     itp('grows by num items if num > growsize', function()
@@ -219,8 +217,8 @@ describe('garray', function()
       growsize = 4
       local grow_by = growsize + 1
       local garr = new_and_grow(itemsize, growsize, grow_by)
-      neq(NULL, ga_data(garr))       -- data should be a ptr to memory
-      eq(grow_by, ga_maxlen(garr))   -- we requested MORE than growsize, so...
+      neq(NULL, ga_data(garr)) -- data should be a ptr to memory
+      eq(grow_by, ga_maxlen(garr)) -- we requested MORE than growsize, so...
     end)
 
     itp('does not grow when nothing is requested', function()
@@ -252,7 +250,7 @@ describe('garray', function()
       -- this is the actual ga_append, the others are just emulated lua
       -- versions
       local garr = new_garray()
-      ga_init(garr, ffi.sizeof("uint8_t"), 1)
+      ga_init(garr, ffi.sizeof('uint8_t'), 1)
       ga_append(garr, 'h')
       ga_append(garr, 'e')
       ga_append(garr, 'l')
@@ -265,13 +263,13 @@ describe('garray', function()
 
     itp('can append integers', function()
       local garr = new_garray()
-      ga_init(garr, ffi.sizeof("int"), 1)
+      ga_init(garr, ffi.sizeof('int'), 1)
       local input = {
         -20,
         94,
         867615,
         90927,
-        86
+        86,
       }
       ga_append_ints(garr, unpack(input))
       local ints = ga_data_as_ints(garr)
@@ -283,11 +281,11 @@ describe('garray', function()
     itp('can append strings to a growing array of strings', function()
       local garr = new_string_garray()
       local input = {
-        "some",
-        "str",
-        "\r\n\r●●●●●●,,,",
-        "hmm",
-        "got it"
+        'some',
+        'str',
+        '\r\n\r●●●●●●,,,',
+        'hmm',
+        'got it',
       }
       ga_append_strings(garr, unpack(input))
       -- check that we can get the same strings out of the array
@@ -301,8 +299,8 @@ describe('garray', function()
   describe('ga_concat', function()
     itp('concatenates the parameter to the growing byte array', function()
       local garr = new_garray()
-      ga_init(garr, ffi.sizeof("char"), 1)
-      local str = "ohwell●●"
+      ga_init(garr, ffi.sizeof('char'), 1)
+      local str = 'ohwell●●'
       local loop = 5
       for _ = 1, loop do
         ga_concat(garr, str)
@@ -319,42 +317,29 @@ describe('garray', function()
     end)
   end)
 
-  local function test_concat_fn(input, fn, sep)
+  local function test_concat_fn(input, sep)
     local garr = new_string_garray()
     ga_append_strings(garr, unpack(input))
-    if sep == nil then
-      eq(table.concat(input, ','), fn(garr))
-    else
-      eq(table.concat(input, sep), fn(garr, sep))
-    end
+    eq(table.concat(input, sep), ga_concat_strings(garr, sep))
   end
 
   describe('ga_concat_strings', function()
     itp('returns an empty string when concatenating an empty array', function()
-      test_concat_fn({ }, ga_concat_strings)
+      test_concat_fn({}, ',')
+      test_concat_fn({}, '---')
     end)
 
     itp('can concatenate a non-empty array', function()
       test_concat_fn({
         'oh',
         'my',
-        'neovim'
-      }, ga_concat_strings)
-    end)
-  end)
-
-  describe('ga_concat_strings_sep', function()
-    itp('returns an empty string when concatenating an empty array', function()
-      test_concat_fn({ }, ga_concat_strings_sep, '---')
-    end)
-
-    itp('can concatenate a non-empty array', function()
-      local sep = '-●●-'
+        'neovim',
+      }, ',')
       test_concat_fn({
         'oh',
         'my',
-        'neovim'
-      }, ga_concat_strings_sep, sep)
+        'neovim',
+      }, '-●●-')
     end)
   end)
 
@@ -370,13 +355,13 @@ describe('garray', function()
         'bbb',
         'ccc',
         'ccc',
-        'ddd●●'
+        'ddd●●',
       }
       local sorted_dedup_input = {
         'aaa',
         'bbb',
         'ccc',
-        'ddd●●'
+        'ddd●●',
       }
       ga_append_strings(garr, unpack(input))
       ga_remove_duplicate_strings(garr)

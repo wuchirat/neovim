@@ -1,14 +1,12 @@
 " Vim indent file
-" Program:      CMake - Cross-Platform Makefile Generator
-" Module:       $RCSfile: cmake-indent.vim,v $
 " Language:     CMake (ft=cmake)
 " Author:       Andy Cedilnik <andy.cedilnik@kitware.com>
-" Maintainer:   Karthik Krishnan <karthik.krishnan@kitware.com>
-" Last Change:  $Date: 2008-01-16 16:53:53 $
-" Version:      $Revision: 1.9 $
+" Maintainer:   Dimitri Merejkowsky <d.merej@gmail.com>
+" Former Maintainer: Karthik Krishnan <karthik.krishnan@kitware.com>
+" Last Change:  2023 Dec 12
 "
-" Licence:      The CMake license applies to this file. See
-"               http://www.cmake.org/HTML/Copyright.html
+" License:      The CMake license applies to this file. See
+"               https://cmake.org/licensing
 "               This implies that distribution with Vim is allowed
 
 if exists("b:did_indent")
@@ -18,6 +16,8 @@ let b:did_indent = 1
 
 setlocal indentexpr=CMakeGetIndent(v:lnum)
 setlocal indentkeys+==ENDIF(,ENDFOREACH(,ENDMACRO(,ELSE(,ELSEIF(,ENDWHILE(
+
+let b:undo_indent = "setl inde< indk<"
 
 " Only define the function once.
 if exists("*CMakeGetIndent")
@@ -55,32 +55,41 @@ fun! CMakeGetIndent(lnum)
   let cmake_indent_open_regex = '^\s*' . cmake_regex_identifier .
                     \           '\s*(' . cmake_regex_arguments .
                     \           '\(' . cmake_regex_comment . '\)\?$'
-
   let cmake_indent_close_regex = '^' . cmake_regex_arguments .
                     \            ')\s*' .
                     \            '\(' . cmake_regex_comment . '\)\?$'
 
-  let cmake_indent_begin_regex = '^\s*\(IF\|MACRO\|FOREACH\|ELSE\|ELSEIF\|WHILE\|FUNCTION\)\s*('
-  let cmake_indent_end_regex = '^\s*\(ENDIF\|ENDFOREACH\|ENDMACRO\|ELSE\|ELSEIF\|ENDWHILE\|ENDFUNCTION\)\s*('
+  let cmake_closing_parens_line = '^\s*\()\+\)\s*$'
 
-  " Add
-  if previous_line =~? cmake_indent_comment_line " Handle comments
-    let ind = ind
+  let cmake_indent_begin_regex = '^\s*\(BLOCK\|IF\|MACRO\|FOREACH\|ELSE\|ELSEIF\|WHILE\|FUNCTION\)\s*('
+  let cmake_indent_end_regex = '^\s*\(ENDBLOCK\|ENDIF\|ENDFOREACH\|ENDMACRO\|ELSE\|ELSEIF\|ENDWHILE\|ENDFUNCTION\)\s*('
+
+  if this_line =~? cmake_closing_parens_line
+    if previous_line !~? cmake_indent_open_regex
+      let ind = ind - shiftwidth()
+    endif
   else
-    if previous_line =~? cmake_indent_begin_regex
-      let ind = ind + &sw
+    " Add
+    if previous_line =~? cmake_indent_comment_line " Handle comments
+      let ind = ind
+    else
+      if previous_line =~? cmake_indent_begin_regex
+        let ind = ind + shiftwidth()
+      endif
+      if previous_line =~? cmake_indent_open_regex
+        let ind = ind + shiftwidth()
+      endif
     endif
-    if previous_line =~? cmake_indent_open_regex
-      let ind = ind + &sw
-    endif
-  endif
 
-  " Subtract
-  if this_line =~? cmake_indent_end_regex
-    let ind = ind - &sw
-  endif
-  if previous_line =~? cmake_indent_close_regex
-    let ind = ind - &sw
+    " Subtract
+    if this_line =~? cmake_indent_end_regex
+      let ind = ind - shiftwidth()
+    endif
+    if previous_line !~? cmake_closing_parens_line
+      if previous_line =~? cmake_indent_close_regex
+        let ind = ind - shiftwidth()
+      endif
+    endif
   endif
 
   return ind

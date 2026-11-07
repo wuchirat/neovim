@@ -1,9 +1,13 @@
 -- Test for user command counts
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear, source, expect = helpers.clear, helpers.source, helpers.expect
-local feed_command = helpers.feed_command
+local n = require('test.functional.testnvim')()
+local t = require('test.testutil')
 
+local describe, it = t.describe, t.it
+local clear, source, expect = n.clear, n.source, n.expect
+local feed_command = n.feed_command
+
+-- luacheck: ignore 613 (Trailing whitespace in a string)
 describe('command_count', function()
   it('is working', function()
     -- It is relevant for the test to load a file initially.  If this is
@@ -133,8 +137,8 @@ describe('command_count', function()
       let g:lines = []
       func BufStatus()
         call add(g:lines,
-	  \  'aaa: ' . buflisted(g:buf_aaa) . 
-	  \ ' bbb: ' . buflisted(g:buf_bbb) . 
+	  \  'aaa: ' . buflisted(g:buf_aaa) .
+	  \ ' bbb: ' . buflisted(g:buf_bbb) .
 	  \ ' ccc: ' . buflisted(g:buf_ccc))
       endfunc
       se nohidden
@@ -214,7 +218,7 @@ describe('command_count', function()
       RangeTabsAll 1 5
       RangeLines 2 5
       LocalRangeLines 2 5
-      
+
       5argu E16: Invalid range
       4argu d
       1argu a
@@ -225,7 +229,7 @@ describe('command_count', function()
       $tabe 2
       $+tabe E16: Invalid range
       0tabm x
-      
+
       aaa: 1 bbb: 1 ccc: 1
       aaa: 1 bbb: 0 ccc: 0
       aaa: 0 bbb: 0 ccc: 0

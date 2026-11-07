@@ -1,8 +1,15 @@
 -- Test for mappings and abbreviations
 
-local helpers = require('test.functional.helpers')(after_each)
-local clear, feed, insert = helpers.clear, helpers.feed, helpers.insert
-local feed_command, expect, wait = helpers.feed_command, helpers.expect, helpers.wait
+local t = require('test.testutil')
+local n = require('test.functional.testnvim')()
+local Screen = require('test.functional.ui.screen')
+
+local describe, it, before_each = t.describe, t.it, t.before_each
+local clear, feed, insert = n.clear, n.feed, n.insert
+local expect, poke_eventloop = n.expect, n.poke_eventloop
+local command, eq, eval, api = n.command, t.eq, n.eval, n.api
+local exec = n.exec
+local sleep = vim.uv.sleep
 
 describe('mapping', function()
   before_each(clear)
@@ -13,7 +20,7 @@ describe('mapping', function()
       ]])
 
     -- Abbreviations with р (0x80) should work.
-    feed_command('inoreab чкпр   vim')
+    command('inoreab чкпр   vim')
     feed('GAчкпр <esc>')
 
     expect([[
@@ -21,19 +28,18 @@ describe('mapping', function()
       vim ]])
   end)
 
+  -- oldtest: Test_map_ctrl_c_insert()
   it('Ctrl-c works in Insert mode', function()
     -- Mapping of ctrl-c in insert mode
-    feed_command('set cpo-=< cpo-=k')
-    feed_command('inoremap <c-c> <ctrl-c>')
-    feed_command('cnoremap <c-c> dummy')
-    feed_command('cunmap <c-c>')
+    command('set cpo-=< cpo-=k')
+    command('inoremap <c-c> <ctrl-c>')
+    command('cnoremap <c-c> dummy')
+    command('cunmap <c-c>')
     feed('GA<cr>')
-    feed('TEST2: CTRL-C |')
-    wait()
-    feed('<c-c>A|<cr><esc>')
-    wait()
-    feed_command('unmap <c-c>')
-    feed_command('unmap! <c-c>')
+    -- XXX: editor must be in Insert mode before <C-C> is put into input buffer
+    poke_eventloop()
+    feed('TEST2: CTRL-C |<c-c>A|<cr><esc>')
+    command('unmap! <c-c>')
 
     expect([[
 
@@ -41,14 +47,14 @@ describe('mapping', function()
       ]])
   end)
 
+  -- oldtest: Test_map_ctrl_c_visual()
   it('Ctrl-c works in Visual mode', function()
-    feed_command([[vnoremap <c-c> :<C-u>$put ='vmap works'<cr>]])
+    command([[vnoremap <c-c> :<C-u>$put ='vmap works'<cr>]])
     feed('GV')
-    -- XXX: For some reason the mapping is only triggered
-    -- when <C-c> is in a separate feed command.
-    wait()
-    feed('<c-c>')
-    feed_command('vunmap <c-c>')
+    -- XXX: editor must be in Visual mode before <C-C> is put into input buffer
+    poke_eventloop()
+    feed('vV<c-c>')
+    command('vunmap <c-c>')
 
     expect([[
 
@@ -57,23 +63,23 @@ describe('mapping', function()
 
   it('langmap', function()
     -- langmap should not get remapped in insert mode.
-    feed_command('inoremap { FAIL_ilangmap')
-    feed_command('set langmap=+{ langnoremap')
+    command('inoremap { FAIL_ilangmap')
+    command('set langmap=+{ langnoremap')
     feed('o+<esc>')
 
     -- Insert mode expr mapping with langmap.
-    feed_command('inoremap <expr> { "FAIL_iexplangmap"')
+    command('inoremap <expr> { "FAIL_iexplangmap"')
     feed('o+<esc>')
 
     -- langmap should not get remapped in cmdline mode.
-    feed_command('cnoremap { FAIL_clangmap')
+    command('cnoremap { FAIL_clangmap')
     feed('o+<esc>')
-    feed_command('cunmap {')
+    command('cunmap {')
 
     -- cmdline mode expr mapping with langmap.
-    feed_command('cnoremap <expr> { "FAIL_cexplangmap"')
+    command('cnoremap <expr> { "FAIL_cexplangmap"')
     feed('o+<esc>')
-    feed_command('cunmap {')
+    command('cunmap {')
 
     -- Assert buffer contents.
     expect([[
@@ -84,6 +90,7 @@ describe('mapping', function()
       +]])
   end)
 
+  -- oldtest: Test_map_feedkeys()
   it('feedkeys', function()
     insert([[
       a b c d
@@ -91,27 +98,32 @@ describe('mapping', function()
       ]])
 
     -- Vim's issue #212 (feedkeys insert mapping at current position)
-    feed_command('nnoremap . :call feedkeys(".", "in")<cr>')
+    command('nnoremap . :call feedkeys(".", "in")<cr>')
     feed('/^a b<cr>')
     feed('0qqdw.ifoo<esc>qj0@q<esc>')
-    feed_command('unmap .')
+    command('unmap .')
     expect([[
       fooc d
       fooc d
       ]])
   end)
 
+  -- oldtest: Test_map_cursor()
   it('i_CTRL-G_U', function()
     -- <c-g>U<cursor> works only within a single line
-    feed_command('imapclear')
-    feed_command('imap ( ()<c-g>U<left>')
+    command('imapclear')
+    command('imap ( ()<c-g>U<left>')
     feed('G2o<esc>ki<cr>Test1: text with a (here some more text<esc>k.')
     -- test undo
     feed('G2o<esc>ki<cr>Test2: text wit a (here some more text [und undo]<c-g>u<esc>k.u')
-    feed_command('imapclear')
-    feed_command('set whichwrap=<,>,[,]')
+    command('imapclear')
+    command('set whichwrap=<,>,[,]')
     feed('G3o<esc>2k')
-    feed_command([[:exe ":norm! iTest3: text with a (parenthesis here\<C-G>U\<Right>new line here\<esc>\<up>\<up>."]])
+    -- Nvim: "." re-executes the whole insert session, including the (wrapping)
+    -- CTRL-G U <Right>, instead of only the text typed after it.
+    command(
+      [[:exe ":norm! iTest3: text with a (parenthesis here\<C-G>U\<Right>new line here\<esc>\<up>\<up>."]]
+    )
 
     expect([[
 
@@ -121,9 +133,123 @@ describe('mapping', function()
 
 
       Test2: text wit a (here some more text [und undo])
-      new line here
       Test3: text with a (parenthesis here
+      new line hereTest3: text with a (parenthesis here
       new line here
       ]])
+  end)
+
+  -- oldtest: Test_mouse_drag_mapped_start_select()
+  it('dragging starts Select mode even if coming from mapping', function()
+    command('set mouse=a')
+    command('set selectmode=mouse')
+
+    command('nnoremap <LeftDrag> <LeftDrag><Cmd><CR>')
+    poke_eventloop()
+    api.nvim_input_mouse('left', 'press', '', 0, 0, 0)
+    poke_eventloop()
+    api.nvim_input_mouse('left', 'drag', '', 0, 0, 1)
+    poke_eventloop()
+    eq('s', eval('mode()'))
+  end)
+
+  -- oldtest: Test_mouse_drag_insert_map()
+  it('<LeftDrag> mapping in Insert mode works correctly', function()
+    command('set mouse=a')
+
+    command('inoremap <LeftDrag> <LeftDrag><Cmd>let g:dragged = 1<CR>')
+    feed('i')
+    poke_eventloop()
+    api.nvim_input_mouse('left', 'press', '', 0, 0, 0)
+    poke_eventloop()
+    api.nvim_input_mouse('left', 'drag', '', 0, 0, 1)
+    poke_eventloop()
+    eq(1, eval('g:dragged'))
+    eq('v', eval('mode()'))
+    feed([[<C-\><C-N>]])
+
+    command([[inoremap <LeftDrag> <LeftDrag><C-\><C-N>]])
+    feed('i')
+    poke_eventloop()
+    api.nvim_input_mouse('left', 'press', '', 0, 0, 0)
+    poke_eventloop()
+    api.nvim_input_mouse('left', 'drag', '', 0, 0, 1)
+    poke_eventloop()
+    eq('n', eval('mode()'))
+  end)
+
+  -- oldtest: Test_map_after_timed_out_nop()
+  it('timeout works after an <Nop> mapping is triggered on timeout', function()
+    command('set timeout timeoutlen=400')
+    command('inoremap ab TEST')
+    command('inoremap a <Nop>')
+    -- Enter Insert mode
+    feed('i')
+    -- Wait for the "a" mapping to time out
+    feed('a')
+    sleep(500)
+    -- Send "a" and wait for a period shorter than 'timeoutlen'
+    feed('a')
+    sleep(100)
+    -- Send "b", should trigger the "ab" mapping
+    feed('b')
+    expect('TEST')
+  end)
+
+  -- oldtest: Test_showcmd_part_map()
+  it("'showcmd' with a partial mapping", function()
+    local screen = Screen.new(60, 6)
+    exec([[
+      set notimeout showcmd
+      nnoremap ,a <Ignore>
+      nnoremap ;a <Ignore>
+      nnoremap Àa <Ignore>
+      nnoremap Ëa <Ignore>
+      nnoremap βa <Ignore>
+      nnoremap ωa <Ignore>
+      nnoremap …a <Ignore>
+      nnoremap <C-W>a <Ignore>
+    ]])
+
+    for _, c in ipairs({ ',', ';', 'À', 'Ë', 'β', 'ω', '…' }) do
+      feed(c)
+      screen:expect(([[
+        ^                                                            |
+        {1:~                                                           }|*4
+                                                         %s          |
+      ]]):format(c))
+      feed('a')
+      screen:expect([[
+        ^                                                            |
+        {1:~                                                           }|*4
+                                                                    |
+      ]])
+    end
+
+    feed('\23')
+    screen:expect([[
+      ^                                                            |
+      {1:~                                                           }|*4
+                                                       ^W         |
+    ]])
+    feed('a')
+    screen:expect([[
+      ^                                                            |
+      {1:~                                                           }|*4
+                                                                  |
+    ]])
+
+    feed('<C-W>')
+    screen:expect([[
+      ^                                                            |
+      {1:~                                                           }|*4
+                                                       ^W         |
+    ]])
+    feed('a')
+    screen:expect([[
+      ^                                                            |
+      {1:~                                                           }|*4
+                                                                  |
+    ]])
   end)
 end)

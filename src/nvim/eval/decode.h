@@ -1,14 +1,9 @@
-#ifndef NVIM_EVAL_DECODE_H
-#define NVIM_EVAL_DECODE_H
+#pragma once
 
-#include <stddef.h>
+#include <stddef.h>  // IWYU pragma: keep
 
-#include <msgpack.h>
+#include "mpack/object.h"  // IWYU pragma: keep
+#include "nvim/eval/typval_defs.h"  // IWYU pragma: keep
+#include "nvim/types_defs.h"  // IWYU pragma: keep
 
-#include "nvim/eval/typval.h"
-#include "nvim/globals.h"
-
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "eval/decode.h.generated.h"
-#endif
-#endif  // NVIM_EVAL_DECODE_H
+#include "eval/decode.h.generated.h"

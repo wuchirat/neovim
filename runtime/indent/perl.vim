@@ -1,9 +1,10 @@
 " Vim indent file
-" Language:      Perl 5
-" Maintainer:    vim-perl <vim-perl@googlegroups.com>
-" Homepage:      http://github.com/vim-perl/vim-perl
-" Bugs/requests: http://github.com/vim-perl/vim-perl/issues
-" Last Change:   2013-07-24
+" Language:      Perl
+" Maintainer:    vim-perl <vim-perl@googlegroups.com> (need to be subscribed to post)
+" Homepage:      https://github.com/vim-perl/vim-perl
+" Bugs/requests: https://github.com/vim-perl/vim-perl/issues
+" License:       Vim License (see :help license)
+" Last Change:   2022 Jun 14
 
 " Suggestions and improvements by :
 "   Aaron J. Sherman (use syntax for hints)
@@ -35,6 +36,8 @@ if !b:indent_use_syntax
     setlocal indentkeys+=0=EO
 endif
 
+let b:undo_indent = "setl inde< indk<"
+
 let s:cpo_save = &cpo
 set cpo-=C
 
@@ -45,11 +48,6 @@ function! GetPerlIndent()
 
     " Indent POD markers to column 0
     if cline =~ '^\s*=\L\@!'
-        return 0
-    endif
-
-    " Don't reindent comments on first column
-    if cline =~ '^#.'
         return 0
     endif
 
@@ -134,13 +132,15 @@ function! GetPerlIndent()
                         \ || synid == "perlMatchStartEnd"
                         \ || synid == "perlHereDoc"
                         \ || synid == "perlBraces"
+                        \ || synid == "perlStatementIndirObj"
+                        \ || synid == "perlSubDeclaration"
                         \ || synid =~ "^perlFiledescStatement"
                         \ || synid =~ '^perl\(Sub\|Block\|Package\)Fold'
                 let brace = strpart(line, bracepos, 1)
                 if brace == '(' || brace == '{' || brace == '['
-                    let ind = ind + &sw
+                    let ind = ind + shiftwidth()
                 else
-                    let ind = ind - &sw
+                    let ind = ind - shiftwidth()
                 endif
             endif
             let bracepos = match(line, braceclass, bracepos + 1)
@@ -151,26 +151,27 @@ function! GetPerlIndent()
             if synid == ""
                         \ || synid == "perlMatchStartEnd"
                         \ || synid == "perlBraces"
+                        \ || synid == "perlStatementIndirObj"
                         \ || synid =~ '^perl\(Sub\|Block\|Package\)Fold'
-                let ind = ind - &sw
+                let ind = ind - shiftwidth()
             endif
         endif
     else
         if line =~ '[{[(]\s*\(#[^])}]*\)\=$'
-            let ind = ind + &sw
+            let ind = ind + shiftwidth()
         endif
         if cline =~ '^\s*[])}]'
-            let ind = ind - &sw
+            let ind = ind - shiftwidth()
         endif
     endif
 
     " Indent lines that begin with 'or' or 'and'
     if cline =~ '^\s*\(or\|and\)\>'
         if line !~ '^\s*\(or\|and\)\>'
-            let ind = ind + &sw
+            let ind = ind + shiftwidth()
         endif
     elseif line =~ '^\s*\(or\|and\)\>'
-        let ind = ind - &sw
+        let ind = ind - shiftwidth()
     endif
 
     return ind

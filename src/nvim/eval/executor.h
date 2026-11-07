@@ -1,11 +1,5 @@
-#ifndef NVIM_EVAL_EXECUTOR_H
-#define NVIM_EVAL_EXECUTOR_H
+#pragma once
 
-#include "nvim/eval/typval.h"
+#include "nvim/eval/typval_defs.h"  // IWYU pragma: keep
 
-extern char *e_listidx;
-
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "eval/executor.h.generated.h"
-#endif
-#endif  // NVIM_EVAL_EXECUTOR_H
+#include "eval/executor.h.generated.h"

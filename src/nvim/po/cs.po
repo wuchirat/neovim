@@ -404,7 +404,7 @@ msgid " Omni completion (^O^N^P)"
 msgstr " Doplòování tagù (^I/^N/^P)"
 
 #: ../edit.c:96
-msgid " Spelling suggestion (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
 msgstr ""
 
 #: ../edit.c:97
@@ -1249,18 +1249,14 @@ msgstr "E143: Automatické pøíkazy neoèekávanì smazaly nový buffer %s"
 msgid "E144: non-numeric argument to :z"
 msgstr "E144: neèíselný argument pro :z"
 
-#: ../ex_cmds.c:3404
-msgid "E145: Shell commands not allowed in rvim"
-msgstr "E145: rvim nepovoluje pou¾ití pøíkazù shellu"
-
 #: ../ex_cmds.c:3498
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: Regulární výrazy nesmí být oddìleny písmeny"
 
 #: ../ex_cmds.c:3964
 #, c-format
-msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
-msgstr "nahradit za %s (y/n/a/q/l/^E/^Y)?"
+msgid "replace with %s? (y)es/(n)o/(a)ll/(q)uit/(l)ast/scroll up(^E)/down(^Y)"
+msgstr "nahradit za %s? (y)es/(n)o/(a)ll/(q)uit/(l)ast/scroll up(^E)/down(^Y)"
 
 #: ../ex_cmds.c:4379
 msgid "(Interrupted) "
@@ -1329,18 +1325,18 @@ msgstr "Nepanikaøte!"
 
 #: ../ex_cmds.c:4717
 #, fuzzy, c-format
-msgid "E661: Sorry, no '%s' help for %s"
-msgstr "E149: Lituji, pro %s není ¾ádná nápovìda"
+msgid "E661: No '%s' help for %s"
+msgstr "E149: Pro %s není ¾ádná nápovìda"
 
 #: ../ex_cmds.c:4719
 #, c-format
-msgid "E149: Sorry, no help for %s"
-msgstr "E149: Lituji, pro %s není ¾ádná nápovìda"
+msgid "E149: No help for %s"
+msgstr "E149: Pro %s není ¾ádná nápovìda"
 
 #: ../ex_cmds.c:4751
 #, c-format
-msgid "Sorry, help file \"%s\" not found"
-msgstr "Lituji, soubor \"%s\" s nápovìdou nebyl nalezen"
+msgid "Help file \"%s\" not found"
+msgstr "Soubor \"%s\" s nápovìdou nebyl nalezen"
 
 #: ../ex_cmds.c:5323
 #, c-format
@@ -2535,7 +2531,7 @@ msgstr "E216: Událost %s neexistuje"
 #: ../fileio.c:6090
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Automatické pøíkazy ---"
@@ -2559,7 +2555,7 @@ msgstr "E218: vnoøení automatického pøíkazu pøíli¹ hluboká"
 
 #: ../fileio.c:7143
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s automatické pøíkazy pro \"%s\""
 
 #: ../fileio.c:7149
@@ -2663,11 +2659,6 @@ msgstr "Je vy¾adován argument"
 #: ../globals.h:998
 msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: po \\ by mìl následovat /. ? nebo &"
-
-#: ../globals.h:1000
-msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
-msgstr ""
-"E11: Chyba v oknì pøíkazové øádky; <CR> pro spu¹t¹ní, CTRL-C pro ukonèení"
 
 #: ../globals.h:1002
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
@@ -3081,131 +3072,6 @@ msgstr "hledání dosáhlo zaèátku, pokraèování od konce"
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "hledání dosáhlo konce, pokraèování od zaèátku"
 
-#: ../hardcopy.c:240
-#, fuzzy
-msgid "E550: Missing colon"
-msgstr "Chybí dvojteèka"
-
-#: ../hardcopy.c:252
-#, fuzzy
-msgid "E551: Illegal component"
-msgstr "nepøípustná souèást"
-
-#: ../hardcopy.c:259
-#, fuzzy
-msgid "E552: digit expected"
-msgstr "oèekávána èíslice"
-
-#: ../hardcopy.c:473
-#, c-format
-msgid "Page %d"
-msgstr ""
-
-#: ../hardcopy.c:597
-msgid "No text to be printed"
-msgstr "®ádný text k vyti¹tìní"
-
-#: ../hardcopy.c:668
-#, c-format
-msgid "Printing page %d (%d%%)"
-msgstr "Tisknu stranu %d (%d%%)"
-
-#: ../hardcopy.c:680
-#, c-format
-msgid " Copy %d of %d"
-msgstr " Kopie %d z %d"
-
-#: ../hardcopy.c:733
-#, c-format
-msgid "Printed: %s"
-msgstr "Vyti¹tìno: %s"
-
-#: ../hardcopy.c:740
-msgid "Printing aborted"
-msgstr "Tisk zru¹en"
-
-#: ../hardcopy.c:1365
-msgid "E455: Error writing to PostScript output file"
-msgstr "E455: Nelze zapisovat do výstupního PostScriptového souboru"
-
-#: ../hardcopy.c:1747
-#, fuzzy, c-format
-msgid "E624: Can't open file \"%s\""
-msgstr "E456: Nelze otevøít soubor \"%s\""
-
-#: ../hardcopy.c:1756 ../hardcopy.c:2470
-#, c-format
-msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E457: Nelze èíst zdrojový PostScriptový soubor \"%s\""
-
-#: ../hardcopy.c:1772
-#, fuzzy, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
-msgstr "E457: Nelze èíst zdrojový PostScriptový soubor \"%s\""
-
-#: ../hardcopy.c:1788 ../hardcopy.c:1805 ../hardcopy.c:1844
-#, fuzzy, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E457: Nelze èíst zdrojový PostScriptový soubor \"%s\""
-
-#: ../hardcopy.c:1856
-#, c-format
-msgid "E621: \"%s\" resource file has wrong version"
-msgstr ""
-
-#: ../hardcopy.c:2225
-msgid "E673: Incompatible multi-byte encoding and character set."
-msgstr ""
-
-#: ../hardcopy.c:2238
-msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
-msgstr ""
-
-#: ../hardcopy.c:2254
-msgid "E675: No default font specified for multi-byte printing."
-msgstr ""
-
-#: ../hardcopy.c:2426
-msgid "E324: Can't open PostScript output file"
-msgstr "E324: Nelze otevøít výstupní PostScriptový soubor"
-
-#: ../hardcopy.c:2458
-#, c-format
-msgid "E456: Can't open file \"%s\""
-msgstr "E456: Nelze otevøít soubor \"%s\""
-
-#: ../hardcopy.c:2583
-#, fuzzy
-msgid "E456: Can't find PostScript resource file \"prolog.ps\""
-msgstr "E457: Nelze èíst zdrojový PostScriptový soubor \"%s\""
-
-#: ../hardcopy.c:2593
-#, fuzzy
-msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
-msgstr "E457: Nelze èíst zdrojový PostScriptový soubor \"%s\""
-
-#: ../hardcopy.c:2622 ../hardcopy.c:2639 ../hardcopy.c:2665
-#, fuzzy, c-format
-msgid "E456: Can't find PostScript resource file \"%s.ps\""
-msgstr "E457: Nelze èíst zdrojový PostScriptový soubor \"%s\""
-
-#: ../hardcopy.c:2654
-#, c-format
-msgid "E620: Unable to convert to print encoding \"%s\""
-msgstr ""
-
-#: ../hardcopy.c:2877
-msgid "Sending to printer..."
-msgstr "Odesílám na tiskárnu..."
-
-#: ../hardcopy.c:2881
-msgid "E365: Failed to print PostScript file"
-msgstr "E365: Selhal tisk PostScriptového souboru"
-
-#: ../hardcopy.c:2883
-msgid "Print job sent."
-msgstr "Tisková úloha odeslána."
-
 #: ../if_cscope.c:85
 msgid "Add a new database"
 msgstr "Pøidat novou databázi"
@@ -3486,7 +3352,7 @@ msgstr "-q [chybový soubor]  editovat soubor na místì výskytu první chyby"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -3550,10 +3416,6 @@ msgstr "-v\t\t\tSnadný re¾im (stejné jako \"evim\", ¾ádné módy )"
 #: ../main.c:2207
 msgid "-R\t\t\tReadonly mode (like \"view\")"
 msgstr "-R\t\t\tRe¾im pouze_pro_ètení (jako \"view\")"
-
-#: ../main.c:2208
-msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
-msgstr "-Z\t\t\tOmezený re¾im (stejné jako \"rvim\")"
 
 #: ../main.c:2209
 msgid "-m\t\t\tModifications (writing files) not allowed"
@@ -4169,12 +4031,8 @@ msgid "E325: ATTENTION"
 msgstr "E325: POZOR"
 
 #: ../memline.c:3222
-msgid ""
-"\n"
-"Found a swap file by the name \""
-msgstr ""
-"\n"
-"Nalezen odkládací soubor se jménem \""
+msgid "Found a swap file by the name \""
+msgstr "Nalezen odkládací soubor se jménem \""
 
 #: ../memline.c:3226
 msgid "While opening file \""
@@ -4210,8 +4068,8 @@ msgstr ""
 "(2) Editace tohoto souboru byla pøeru¹ena neèekaným ukonèením programu.\n"
 
 #: ../memline.c:3247
-msgid "    If this is the case, use \":recover\" or \"vim -r "
-msgstr "    Je-li tomu tak, pak pou¾ijte \":recover\" èi \"vim -r "
+msgid "    If this is the case, use \":recover\" or \"nvim -r "
+msgstr "    Je-li tomu tak, pak pou¾ijte \":recover\" èi \"nvim -r "
 
 #: ../memline.c:3249
 msgid ""
@@ -4884,12 +4742,8 @@ msgstr ""
 "nelze spustit shell "
 
 #: ../os/shell.c:439
-msgid ""
-"\n"
-"shell returned "
-msgstr ""
-"\n"
-" návratová hodnota shellu "
+msgid "shell returned "
+msgstr " návratová hodnota shellu "
 
 #: ../os_unix.c:465 ../os_unix.c:471
 msgid ""
@@ -5761,12 +5615,12 @@ msgid "E763: Word characters differ between spell files"
 msgstr ""
 
 #: ../spell.c:8684
-msgid "Sorry, no suggestions"
+msgid "No suggestions"
 msgstr ""
 
 #: ../spell.c:8687
 #, fuzzy, c-format
-msgid "Sorry, only %<PRId64> suggestions"
+msgid "Only %<PRId64> suggestions"
 msgstr " na %<PRId64> øádcích"
 
 #. for when 'cmdheight' > 1
@@ -6080,10 +5934,10 @@ msgstr ""
 msgid "E669: Unprintable character in group name"
 msgstr ""
 
-#: ../syntax.c:7434
+#: ../highlight_group.c:1756
 #, fuzzy
-msgid "W18: Invalid character in group name"
-msgstr "E182: Chybné jméno pøíkazu"
+msgid "E5248: Invalid character in group name"
+msgstr "E5248: Chybné jméno pøíkazu"
 
 #: ../syntax.c:7448
 msgid "E849: Too many highlight and syntax groups"

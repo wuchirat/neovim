@@ -381,8 +381,8 @@ msgid " Omni completion (^O^N^P)"
 msgstr " Omni 완성 (^O^N^P)"
 
 #: ../edit.c:96
-msgid " Spelling suggestion (s^N^P)"
-msgstr " 단어 제안 (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " 단어 제안 (^S^N^P)"
 
 #: ../edit.c:97
 msgid " Keyword Local completion (^N^P)"
@@ -1111,6 +1111,10 @@ msgstr "E137: Viminfo 파일의 쓰기 권한이 없습니다: %s"
 
 #: ../ex_cmds.c:1626
 #, c-format
+msgid "E929: Too many viminfo temp files, like %s!"
+msgstr "E929: 너무 많은 viminfo 임시 파일들, 가령 %s!"
+
+#, c-format
 msgid "E138: Can't write viminfo file %s!"
 msgstr "E138: Viminfo 파일 %s을(를) 쓸 수 없습니다!"
 
@@ -1118,6 +1122,10 @@ msgstr "E138: Viminfo 파일 %s을(를) 쓸 수 없습니다!"
 #, c-format
 msgid "Writing viminfo file \"%s\""
 msgstr "Viminfo 파일 \"%s\"을(를) 쓰는 중"
+
+#, c-format
+msgid "E886: Can't rename viminfo file to %s!"
+msgstr "E886: viminfo 파일명을 %s(으)로 변경할 수 없습니다!"
 
 #. Write the info:
 #: ../ex_cmds.c:1720
@@ -1207,18 +1215,14 @@ msgstr "E143: Autocommand가 뜻 밖에 새 버퍼 %s을(를) 지웠습니다"
 msgid "E144: non-numeric argument to :z"
 msgstr "E144: 숫자가 아닌 인자가 :z에 주어졌습니다"
 
-#: ../ex_cmds.c:3404
-msgid "E145: Shell commands not allowed in rvim"
-msgstr "E145: rvim에서는 쉘 명령을 사용할 수 없습니다"
-
 #: ../ex_cmds.c:3498
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: 정규표현식은 글자로 구분될 수 없습니다"
 
 #: ../ex_cmds.c:3964
 #, c-format
-msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
-msgstr "%s(으)로 바꿈 (y/n/a/q/l/^E/^Y)?"
+msgid "replace with %s? (y)es/(n)o/(a)ll/(q)uit/(l)ast/scroll up(^E)/down(^Y)"
+msgstr "%s(으)로 바꿈? (y)es/(n)o/(a)ll/(q)uit/(l)ast/scroll up(^E)/down(^Y)"
 
 #: ../ex_cmds.c:4379
 msgid "(Interrupted) "
@@ -1285,23 +1289,23 @@ msgstr "E478: 당황하지 마십시오!"
 
 #: ../ex_cmds.c:4717
 #, c-format
-msgid "E661: Sorry, no '%s' help for %s"
-msgstr "E661: 미안합니다, 도움말 '%s'이(가) %s에 대해 없습니다"
+msgid "E661: No '%s' help for %s"
+msgstr "E661: 도움말 '%s'이(가) %s에 대해 없습니다"
 
 #: ../ex_cmds.c:4719
 #, c-format
-msgid "E149: Sorry, no help for %s"
-msgstr "E149: 미안합니다, %s에 대한 도움말이 없습니다"
+msgid "E149: No help for %s"
+msgstr "E149: %s에 대한 도움말이 없습니다"
 
 #: ../ex_cmds.c:4751
 #, c-format
-msgid "Sorry, help file \"%s\" not found"
-msgstr "미안합니다, 도움말 파일 \"%s\"을(를) 찾을 수 없습니다"
+msgid "Help file \"%s\" not found"
+msgstr "도움말 파일 \"%s\"을(를) 찾을 수 없습니다"
 
 #: ../ex_cmds.c:5323
 #, c-format
-msgid "E150: Not a directory: %s"
-msgstr "E150: 디렉토리가 아님: %s"
+msgid "E151: No match: %s"
+msgstr "E151: 맞지 않음: %s"
 
 #: ../ex_cmds.c:5446
 #, c-format
@@ -1324,6 +1328,10 @@ msgid "E154: Duplicate tag \"%s\" in file %s/%s"
 msgstr "E154: \"%s\" 태그가 %s/%s 파일에서 중복되었습니다"
 
 #: ../ex_cmds.c:5687
+#, c-format
+msgid "E150: Not a directory: %s"
+msgstr "E150: 디렉토리가 아님: %s"
+
 #, c-format
 msgid "E160: Unknown sign command: %s"
 msgstr "E160: 모르는 sign 명령: %s"
@@ -1452,8 +1460,16 @@ msgstr "\"%s\"을(를) 찾는 중"
 
 #: ../ex_cmds2.c:2307
 #, c-format
-msgid "not found in 'runtimepath': \"%s\""
-msgstr "'runtimepath'에서 찾을 수 없음: \"%s\""
+msgid "not found in '%s': \"%s\""
+msgstr "'%s'에서 찾을 수 없음: \"%s\""
+
+#, c-format
+msgid "W20: Required python version 2.x not supported, ignoring file: %s"
+msgstr "W20: 요구되는 파이선 버젼 2.x는 지원되지 않음, 파일을 무시: %s"
+
+#, c-format
+msgid "W21: Required python version 3.x not supported, ignoring file: %s"
+msgstr "W21: 요구되는 파이선 버젼 3.x는 지원되지 않음, 파일을 무시: %s"
 
 #: ../ex_cmds2.c:2472
 #, c-format
@@ -1609,10 +1625,10 @@ msgstr "E174: 명령이 이미 존재합니다: 바꾸려면 !을 더하세요"
 #: ../ex_docmd.c:4432
 msgid ""
 "\n"
-"    Name        Args Range Complete  Definition"
+"    Name        Args       Address   Complete  Definition"
 msgstr ""
 "\n"
-"    이름        인자 범위  완성      정의"
+"    이름        인자       주소      완성      정의"
 
 #: ../ex_docmd.c:4516
 msgid "No user-defined commands found"
@@ -1661,6 +1677,10 @@ msgid "E184: No such user-defined command: %s"
 msgstr "E184: 그런 사용자 정의 명령 없음: %s"
 
 #: ../ex_docmd.c:5219
+#, c-format
+msgid "E180: Invalid address type value: %s"
+msgstr "E180: 잘못된 주소 형식 값: %s"
+
 #, c-format
 msgid "E180: Invalid complete value: %s"
 msgstr "E180: 잘못된 끝내기 값: %s"
@@ -1953,7 +1973,7 @@ msgstr ""
 
 #: ../ex_getln.c:5047
 msgid "Command Line"
-msgstr "명령 줄"
+msgstr "명령 행"
 
 #: ../ex_getln.c:5048
 msgid "Search String"
@@ -1965,7 +1985,10 @@ msgstr "표현"
 
 #: ../ex_getln.c:5050
 msgid "Input Line"
-msgstr "입력 줄"
+msgstr "입력 행"
+
+msgid "Debug Line"
+msgstr "디버그 행"
 
 #: ../ex_getln.c:5117
 msgid "E198: cmd_pchar beyond the command length"
@@ -2433,7 +2456,7 @@ msgstr "E216: 그런 그룹이나 이벤트 없음: %s"
 #: ../fileio.c:6090
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- 자동-명령 ---"
@@ -2558,10 +2581,6 @@ msgstr "E471: 인자가 필요합니다"
 #: ../globals.h:998
 msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: /, ? 혹은 &는 \\ 뒤에 와야 합니다"
-
-#: ../globals.h:1000
-msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
-msgstr "E11: 명령줄 창에 잘못됨; <CR> 실행, CTRL-C 끝내기"
 
 #: ../globals.h:1002
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
@@ -2950,126 +2969,6 @@ msgstr "처음까지 찾았음, 끝에서 계속"
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "끝까지 찾았음, 처음부터 계속"
 
-#: ../hardcopy.c:240
-msgid "E550: Missing colon"
-msgstr "E550: 콜론이 없습니다"
-
-#: ../hardcopy.c:252
-msgid "E551: Illegal component"
-msgstr "E551: 이상한 컴포넌트"
-
-#: ../hardcopy.c:259
-msgid "E552: digit expected"
-msgstr "E552: 숫자가 필요합니다"
-
-#: ../hardcopy.c:473
-#, c-format
-msgid "Page %d"
-msgstr "페이지 %d"
-
-#: ../hardcopy.c:597
-msgid "No text to be printed"
-msgstr "인쇄될 텍스트가 없습니다"
-
-#: ../hardcopy.c:668
-#, c-format
-msgid "Printing page %d (%d%%)"
-msgstr "페이지 %d 인쇄중 (%d%%)"
-
-#: ../hardcopy.c:680
-#, c-format
-msgid " Copy %d of %d"
-msgstr " 복사 %d / %d"
-
-#: ../hardcopy.c:733
-#, c-format
-msgid "Printed: %s"
-msgstr "인쇄됨: %s"
-
-#: ../hardcopy.c:740
-msgid "Printing aborted"
-msgstr "인쇄가 취소되었습니다."
-
-#: ../hardcopy.c:1365
-msgid "E455: Error writing to PostScript output file"
-msgstr "E455: 포스트스크립트 출력파일에 쓸 수 없습니다."
-
-#: ../hardcopy.c:1747
-#, c-format
-msgid "E624: Can't open file \"%s\""
-msgstr "E624: \"%s\" 파일을 열 수 없습니다"
-
-#: ../hardcopy.c:1756 ../hardcopy.c:2470
-#, c-format
-msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E457: 포스트스크립트 리소스 파일 \"%s\"을(를) 읽을 수 없습니다"
-
-#: ../hardcopy.c:1772
-#, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
-msgstr "E618: 파일 \"%s\"은(는) 포스트스크립트 리소스 파일이 아닙니다"
-
-#: ../hardcopy.c:1788 ../hardcopy.c:1805 ../hardcopy.c:1844
-#, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E619: 파일 \"%s\"은(는) 지원되는 포스트스크립트 리소스 파일이 아닙니다"
-
-#: ../hardcopy.c:1856
-#, c-format
-msgid "E621: \"%s\" resource file has wrong version"
-msgstr "E621: \"%s\" 리소스 파일은 버전이 잘못되었습니다"
-
-#: ../hardcopy.c:2225
-msgid "E673: Incompatible multi-byte encoding and character set."
-msgstr "E673: 호환되지 않는 다중문자 인코딩과 문자셋."
-
-#: ../hardcopy.c:2238
-msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
-msgstr "E674: printmbcharset는 다중문자 인코딩에서 반드시 설정되어야 합니다."
-
-#: ../hardcopy.c:2254
-msgid "E675: No default font specified for multi-byte printing."
-msgstr "E675: 다중문자 인쇄를 위한 글꼴이 설정되어 있지 않습니다"
-
-#: ../hardcopy.c:2426
-msgid "E324: Can't open PostScript output file"
-msgstr "E324: 포스트스크립트 출력파일을 열 수 없습니다"
-
-#: ../hardcopy.c:2458
-#, c-format
-msgid "E456: Can't open file \"%s\""
-msgstr "E456: \"%s\" 파일을 열 수 없습니다"
-
-#: ../hardcopy.c:2583
-msgid "E456: Can't find PostScript resource file \"prolog.ps\""
-msgstr "E456: 포스트스크립트 리소스 파일 \"prolog.ps\"를 찾을 수 없습니다"
-
-#: ../hardcopy.c:2593
-msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
-msgstr "E456: 포스트스크립트 리소스 파일 \"cidfont.ps\"를 찾을 수 없습니다"
-
-#: ../hardcopy.c:2622 ../hardcopy.c:2639 ../hardcopy.c:2665
-#, c-format
-msgid "E456: Can't find PostScript resource file \"%s.ps\""
-msgstr "E456: 포스트스크립트 리소스 파일 \"%s.ps\"를 찾을 수 없습니다"
-
-#: ../hardcopy.c:2654
-#, c-format
-msgid "E620: Unable to convert to print encoding \"%s\""
-msgstr "E620: \"%s\" 인쇄 인코딩으로 변환할 수 없습니다"
-
-#: ../hardcopy.c:2877
-msgid "Sending to printer..."
-msgstr "프린터로 보내는 중..."
-
-#: ../hardcopy.c:2881
-msgid "E365: Failed to print PostScript file"
-msgstr "E365: 포스트스크립트 파일을 인쇄할 수 없습니다"
-
-#: ../hardcopy.c:2883
-msgid "Print job sent."
-msgstr "인쇄작업이 끝났습니다."
-
 #: ../if_cscope.c:85
 msgid "Add a new database"
 msgstr "새 데이터베이스 더하기"
@@ -3190,6 +3089,7 @@ msgstr "%-5s: %s%*s (사용법: %s)"
 #: ../if_cscope.c:1155
 msgid ""
 "\n"
+"       a: Find assignments to this symbol\n"
 "       c: Find functions calling this function\n"
 "       d: Find functions called by this function\n"
 "       e: Find this egrep pattern\n"
@@ -3200,13 +3100,14 @@ msgid ""
 "       t: Find this text string\n"
 msgstr ""
 "\n"
+"       a: 이 기호에 대한 할당 찾기\n"
 "       c: 이 함수를 부르는 함수들 찾기\n"
 "       d: 이 함수에 의해 불려지는 함수들 찾기\n"
 "       e: 이 egrep 패턴 찾기\n"
 "       f: 이 파일 찾기\n"
 "       g: 이 정의 찾기\n"
-"       i: 이 파일을 포함하는 파일들 찾기\n"
-"       s: 이 C 심볼 찾기\n"
+"       i: 이 파일을 #include하는 파일들 찾기\n"
+"       s: 이 C 기호 찾기\n"
 "       t: 이 문자열 찾기\n"
 
 #: ../if_cscope.c:1226
@@ -3349,7 +3250,7 @@ msgstr "-q [에러파일]   첫 번째 에러가 난 파일 고치기"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -3412,10 +3313,6 @@ msgstr "-y\t\t\t쉬운 상태 (\"evim\"과 같음, modeless)"
 #: ../main.c:2207
 msgid "-R\t\t\tReadonly mode (like \"view\")"
 msgstr "-R\t\t\t읽기 전용 상태 (\"view\"와 같음)"
-
-#: ../main.c:2208
-msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
-msgstr "-Z\t\t\t제한된 상태 (\"rvim\"과 같음)"
 
 #: ../main.c:2209
 msgid "-m\t\t\tModifications (writing files) not allowed"
@@ -4015,12 +3912,8 @@ msgid "E325: ATTENTION"
 msgstr "E325: 주목"
 
 #: ../memline.c:3222
-msgid ""
-"\n"
-"Found a swap file by the name \""
-msgstr ""
-"\n"
-"Found a swap file by the name \""
+msgid "Found a swap file by the name \""
+msgstr "Found a swap file by the name \""
 
 #: ../memline.c:3226
 msgid "While opening file \""
@@ -4056,8 +3949,8 @@ msgstr ""
 "(2) 파일을 고치다가 죽었었습니다.\n"
 
 #: ../memline.c:3247
-msgid "    If this is the case, use \":recover\" or \"vim -r "
-msgstr "    만약 그렇다면 \":recover\" 혹은 \"vim -r "
+msgid "    If this is the case, use \":recover\" or \"nvim -r "
+msgstr "    만약 그렇다면 \":recover\" 혹은 \"nvim -r "
 
 #: ../memline.c:3249
 msgid ""
@@ -4705,12 +4598,8 @@ msgstr ""
 "Cannot execute shell "
 
 #: ../os/shell.c:439
-msgid ""
-"\n"
-"shell returned "
-msgstr ""
-"\n"
-"shell returned "
+msgid "shell returned "
+msgstr "shell returned "
 
 #: ../os_unix.c:465 ../os_unix.c:471
 msgid ""
@@ -4739,6 +4628,13 @@ msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: path에서 \"%s\" 파일을 찾을 수 없습니다"
 
 #: ../quickfix.c:359
+#, c-format
+msgid "shell returned %d"
+msgstr "쉘이 %d을(를) 돌려주었습니다"
+
+msgid "E926: Current location list was changed"
+msgstr "E926: 현재의 location list가 바뀌었습니다"
+
 #, c-format
 msgid "E372: Too many %%%c in format string"
 msgstr "E372: 형식 문자열에 %%%c이(가) 너무 많습니다"
@@ -5247,14 +5143,9 @@ msgstr "E772: Spell 파일이 새 버젼의 Vim용입니다"
 msgid "E770: Unsupported section in spell file"
 msgstr "E770: spell 파일에 지원되지 않는 섹션"
 
-#: ../spell.c:3762
-#, c-format
-msgid "Warning: region %s not supported"
-msgstr "경고: %s 영역은 지원되지 않습니다"
-
 #: ../spell.c:4550
 #, c-format
-msgid "Reading affix file %s ..."
+msgid "Reading affix file %s..."
 msgstr "affix 파일 %s 읽는 중"
 
 #: ../spell.c:4589 ../spell.c:5635 ../spell.c:6140
@@ -5417,7 +5308,7 @@ msgstr "%s 값이 다른 .aff 파일에서 사용된 것과 다릅니다"
 
 #: ../spell.c:5602
 #, c-format
-msgid "Reading dictionary file %s ..."
+msgid "Reading dictionary file %s..."
 msgstr "사전 파일 %s 읽는 중 ..."
 
 #: ../spell.c:5611
@@ -5427,8 +5318,8 @@ msgstr "E760: %s에 단어 카운트가 없습니다"
 
 #: ../spell.c:5669
 #, c-format
-msgid "line %6d, word %6d - %s"
-msgstr "라인 %6d, 단어 %6d - %s"
+msgid "line %6d, word %6ld - %s"
+msgstr "라인 %6d, 단어 %6ld - %s"
 
 #: ../spell.c:5691
 #, c-format
@@ -5452,7 +5343,7 @@ msgstr "무시된 %d개의 아스키문자열이 아닌 단어가 %s에 있습�
 
 #: ../spell.c:6115
 #, c-format
-msgid "Reading word file %s ..."
+msgid "Reading word file %s..."
 msgstr "단어 파일 %s 읽는 중 ..."
 
 #: ../spell.c:6155
@@ -5522,7 +5413,7 @@ msgstr "총 단어 수: %d"
 
 #: ../spell.c:7655
 #, c-format
-msgid "Writing suggestion file %s ..."
+msgid "Writing suggestion file %s..."
 msgstr "%s 제안 파일을 쓰는 중 ..."
 
 #: ../spell.c:7707 ../spell.c:7927
@@ -5549,7 +5440,7 @@ msgstr "경고: compound와 NOBREAK 둘 다 명시됨"
 
 #: ../spell.c:7920
 #, c-format
-msgid "Writing spell file %s ..."
+msgid "Writing spell file %s..."
 msgstr "spell 파일 %s 쓰는 중 ..."
 
 #: ../spell.c:7925
@@ -5576,13 +5467,13 @@ msgid "E763: Word characters differ between spell files"
 msgstr "E763: 단어가 spell 파일 간에 다릅니다"
 
 #: ../spell.c:8684
-msgid "Sorry, no suggestions"
-msgstr "죄송, 제안할 게 없습니다"
+msgid "No suggestions"
+msgstr "제안할 게 없습니다"
 
 #: ../spell.c:8687
 #, c-format
-msgid "Sorry, only %<PRId64> suggestions"
-msgstr "죄송, %<PRId64>개만 제안"
+msgid "Only %<PRId64> suggestions"
+msgstr "%<PRId64>개만 제안"
 
 #. for when 'cmdheight' > 1
 #. avoid more prompt
@@ -5890,9 +5781,9 @@ msgstr "E424: 너무 많은 다른 하이라이트 속성이 사용되고 있습
 msgid "E669: Unprintable character in group name"
 msgstr "E669: 그룹 이름에 출력할 수 없는 문자가 있습니다"
 
-#: ../syntax.c:7434
-msgid "W18: Invalid character in group name"
-msgstr "W18: 그룹 이름에 이상한 문자"
+#: ../highlight_group.c:1756
+msgid "E5248: Invalid character in group name"
+msgstr "E5248: 그룹 이름에 이상한 문자"
 
 #: ../syntax.c:7448
 msgid "E849: Too many highlight and syntax groups"
@@ -6312,7 +6203,7 @@ msgstr "by Bram Moolenaar et al."
 
 #: ../version.c:774
 msgid "Vim is open source and freely distributable"
-msgstr "빔은 소스가 열려 있고 공짜로 배포됩니다"
+msgstr "빔은 누구나 소스를 볼 수 있고 공짜로 배포됩니다"
 
 #: ../version.c:776
 msgid "Help poor children in Uganda!"
@@ -7477,9 +7368,6 @@ msgstr "E446: 커서 밑에 파일 이름이 없습니다"
 
 #~ msgid "Could not fix up function pointers to the DLL!"
 #~ msgstr "함수 포인터를 DLL로 바꿀 수 없습니다!"
-
-#~ msgid "shell returned %d"
-#~ msgstr "쉘이 %d을(를) 돌려주었습니다"
 
 #~ msgid "Vim: Caught %s event\n"
 #~ msgstr "빔: %s 이벤트를 잡았습니다\n"

@@ -1,18 +1,23 @@
 -- Tests for the exists() and has() functions.
 
-local helpers = require('test.functional.helpers')(after_each)
-local source = helpers.source
-local clear, expect = helpers.clear, helpers.expect
-local write_file = helpers.write_file
+local t = require('test.testutil')
+local n = require('test.functional.testnvim')()
+
+local describe, it, setup, teardown = t.describe, t.it, t.setup, t.teardown
+local source = n.source
+local clear, expect = n.clear, n.expect
+local write_file = t.write_file
 
 describe('exists() and has() functions', function()
   setup(function()
     clear()
     -- Create a temporary script needed for the test.
-    write_file('test60.vim', [[
+    write_file(
+      'test60.vim',
+      [[
       " Vim script for exists() function test
       " Script-local variables are checked here
-      
+
       " Existing script-local variable
       let s:script_var = 1
       echo 's:script_var: 1'
@@ -21,7 +26,7 @@ describe('exists() and has() functions', function()
       else
           echo "FAILED"
       endif
-      
+
       " Non-existing script-local variable
       unlet s:script_var
       echo 's:script_var: 0'
@@ -30,7 +35,7 @@ describe('exists() and has() functions', function()
       else
           echo "FAILED"
       endif
-      
+
       " Existing script-local list
       let s:script_list = ["blue", "orange"]
       echo 's:script_list: 1'
@@ -39,7 +44,7 @@ describe('exists() and has() functions', function()
       else
           echo "FAILED"
       endif
-      
+
       " Non-existing script-local list
       unlet s:script_list
       echo 's:script_list: 0'
@@ -48,7 +53,7 @@ describe('exists() and has() functions', function()
       else
           echo "FAILED"
       endif
-      
+
       " Existing script-local dictionary
       let s:script_dict = {"xcord":100, "ycord":2}
       echo 's:script_dict: 1'
@@ -57,7 +62,7 @@ describe('exists() and has() functions', function()
       else
           echo "FAILED"
       endif
-      
+
       " Non-existing script-local dictionary
       unlet s:script_dict
       echo 's:script_dict: 0'
@@ -66,7 +71,7 @@ describe('exists() and has() functions', function()
       else
           echo "FAILED"
       endif
-      
+
       " Existing script curly-brace variable
       let str = "script"
       let s:curly_{str}_var = 1
@@ -76,7 +81,7 @@ describe('exists() and has() functions', function()
       else
           echo "FAILED"
       endif
-      
+
       " Non-existing script-local curly-brace variable
       unlet s:curly_{str}_var
       echo 's:curly_' . str . '_var: 0'
@@ -85,21 +90,21 @@ describe('exists() and has() functions', function()
       else
           echo "FAILED"
       endif
-      
+
       " Existing script-local function
       function! s:my_script_func()
       endfunction
-      
+
       echo '*s:my_script_func: 1'
       if exists('*s:my_script_func')
           echo "OK"
       else
           echo "FAILED"
       endif
-      
+
       " Non-existing script-local function
       delfunction s:my_script_func
-      
+
       echo '*s:my_script_func: 0'
       if !exists('*s:my_script_func')
           echo "OK"
@@ -107,7 +112,8 @@ describe('exists() and has() functions', function()
           echo "FAILED"
       endif
       unlet str
-      ]])
+      ]]
+    )
   end)
   teardown(function()
     os.remove('test.out')
@@ -115,7 +121,6 @@ describe('exists() and has() functions', function()
   end)
 
   it('is working', function()
-
     source([=[
       " Add the special directory with test scripts to &rtp
       set rtp+=test/functional/fixtures
@@ -644,7 +649,7 @@ describe('exists() and has() functions', function()
 
     -- Assert buffer contents.
     expect([[
-      
+
       #myagroup: 1
       OK
       #myagroup+b: 0
@@ -850,6 +855,5 @@ describe('exists() and has() functions', function()
        g:footest#x = 1
          footest#F() 0
       UndefFun() 0]])
-
   end)
 end)

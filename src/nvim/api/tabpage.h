@@ -1,11 +1,6 @@
-#ifndef NVIM_API_TABPAGE_H
-#define NVIM_API_TABPAGE_H
+#pragma once
 
-#include <stdint.h>
+#include "nvim/api/keysets_defs.h"  // IWYU pragma: keep
+#include "nvim/api/private/defs.h"  // IWYU pragma: keep
 
-#include "nvim/api/private/defs.h"
-
-#ifdef INCLUDE_GENERATED_DECLARATIONS
-# include "api/tabpage.h.generated.h"
-#endif
-#endif  // NVIM_API_TABPAGE_H
+#include "api/tabpage.h.generated.h"
